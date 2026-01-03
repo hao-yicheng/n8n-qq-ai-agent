@@ -1,0 +1,22 @@
+# Security: Environment Variables
+.env
+.env.*
+!.env.example
+
+# Data: Raw Exports and References
+n8n/raw_data/
+docs/references/
+
+# OS: System Files
+.DS_Store
+Thumbs.db
+
+# Python: Cache and Compiled Files
+__pycache__/
+*.py[cod]
+
+# Deployment: Runtime Data and Config
+deploy/napcat-compose/napcat-data/
+
+# Scripts: Private Backup Scripts
+scripts/backup_to_samba.sh

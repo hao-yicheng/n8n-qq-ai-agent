@@ -1,0 +1,667 @@
+{
+  "id": "mDp9VPm4loqxJhR6",
+  "name": "QQBot - Sub - RecentSummary",
+  "description": null,
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "options": {
+          "responseFormat": "json_object"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        5456,
+        160
+      ],
+      "id": "5d56d8f8-568e-4ddc-8215-eec68007cbb7",
+      "name": "DeepSeek Chat Model1",
+      "credentials": {
+        "deepSeekApi": {
+          "id": "NnqO5cyPICQm7NBl",
+          "name": "DeepSeek account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        4336,
+        80
+      ],
+      "id": "68ceb095-5f35-4dfc-8dda-265d1064b377",
+      "name": "Schedule Trigger",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a2c532f6-26f5-4421-b4de-2b5b1edca105",
+              "name": "group_id",
+              "value": "6666666666",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4464,
+        80
+      ],
+      "id": "1fa9d22d-e753-4742-b2cd-15db01b9cd4e",
+      "name": "SetGroupId",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "group_id"
+            }
+          ]
+        }
+      },
+      "id": "a7ef690b-9b15-4285-abba-d745f3250f93",
+      "typeVersion": 1.1,
+      "name": "SubTriger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        4336,
+        -64
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH stats AS (\n  SELECT\n    group_id,\n    -- 各状态计数\n    COUNT(*) FILTER (WHERE llm_process_status = 'pending')    AS pending_only_count,\n    COUNT(*) FILTER (WHERE llm_process_status = 'failed')     AS failed_count,\n    COUNT(*) FILTER (WHERE llm_process_status = 'processing') AS processing_count,\n    COUNT(*) FILTER (WHERE llm_process_status = 'done')       AS done_count,\n    COUNT(*) FILTER (WHERE llm_process_status IS NULL)        AS null_count,\n\n    -- 原有聚合\n    COUNT(*) FILTER (WHERE llm_process_status IN ('pending', 'failed')) AS pending_count,\n\n    -- 最近一次总结时间\n    (\n      SELECT MAX(created_at)\n      FROM chat_summaries\n      WHERE group_id = cl.group_id\n    ) AS last_summary_time\n  FROM chat_logs cl\n  WHERE group_id = $1\n  GROUP BY group_id\n)\nSELECT\n  group_id,\n  pending_only_count,\n  failed_count,\n  processing_count,\n  done_count,\n  null_count,\n  pending_count,\n  last_summary_time,\n  CASE\n    WHEN pending_count > 30\n     AND processing_count = 0\n    THEN true\n    ELSE false\n  END AS should_summarize\nFROM stats;",
+        "options": {
+          "queryReplacement": "={{\n  [\n    String($input.first().json.group_id)\n  ]\n}}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        4624,
+        0
+      ],
+      "id": "a0262f8c-bbcd-49ac-a403-aab0067b8f42",
+      "name": "FetchSumStatus",
+      "notesInFlow": false,
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.should_summarize }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    },
+                    "id": "43bd369e-8680-4aa0-8c13-f569d016d663"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        4752,
+        0
+      ],
+      "id": "13686f25-eb5a-4b18-a8b6-a6eba4e6df03",
+      "name": "IsSumRequired"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT *\nFROM chat_summaries\nWHERE group_id = $1\nORDER BY end_time DESC\nLIMIT 1;",
+        "options": {
+          "queryReplacement": "={{\n  [\n    $json.group_id\n  ]\n}}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        4912,
+        -64
+      ],
+      "id": "cdb8efd7-9681-42f0-9b17-146614a77f41",
+      "name": "FetchPrevSum",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const record = $input.first().json;\n\nconst chatSummary = {\n  summary: record.summary || \"\",\n  key_points: Array.isArray(record.key_points)\n    ? record.key_points.map(kp => ({\n        t: kp.t,\n        u: kp.u,\n        c: kp.c,\n        from_self: kp.hasOwnProperty(\"from_self\") ? kp.from_self : \"N/A\" // 占位符\n      }))\n    : [],\n  unresolved: Array.isArray(record.unresolved) ? record.unresolved : [],\n  topics: Array.isArray(record.topics) ? record.topics : [],\n  participants: Array.isArray(record.participants)\n    ? record.participants.map(p => ({\n        id: p.id,\n        n: p.n,\n        o: p.o,\n        r: p.r,\n        is_bot: p.hasOwnProperty(\"is_bot\") ? p.is_bot : \"N/A\" // 占位符\n      }))\n    : []\n};\n\nreturn [{ chat_summary: chatSummary }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5168,
+        -64
+      ],
+      "id": "2da8055f-ff20-4463-b38a-9b01e4121495",
+      "name": "PrepPrevSum"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH locked AS (\n  UPDATE chat_logs\n  SET llm_process_status = 'processing'\n  WHERE id IN (\n    SELECT id\n    FROM chat_logs\n    WHERE group_id = $1\n      AND llm_process_status IN ('pending', 'failed')\n    ORDER BY sent_at ASC\n    LIMIT 30\n    FOR UPDATE SKIP LOCKED\n  )\n  RETURNING *\n)\nSELECT\n  l.id,\n  l.msg_id,\n  l.group_id,\n  l.sender_user_id,\n  gm.card_name       AS card_name,\n  gm.group_role      AS user_group_role,\n  gm.special_title   AS user_special_title,\n  u.user_inner_id    AS user_inner_id,\n  u.nickname         AS user_nickname,\n  u.is_bot           AS user_is_bot,\n  \n  l.msg_type,\n  l.processed_text,\n  l.reply_to_msg_id,\n  reply.processed_text AS reply_text,\n  reply_gm.card_name     AS reply_card_name,\n  reply_gm.group_role    AS reply_group_role,\n  reply_gm.special_title AS reply_special_title,\n  reply_u.user_inner_id  AS reply_user_inner_id,\n  reply_u.nickname       AS reply_nickname,\n  reply_u.is_bot         AS reply_is_bot,\n  \n  l.is_recalled,\n  l.recalled_by_user_id,\n  l.llm_process_status,\n  l.is_inappropriate,\n  l.sent_at\nFROM locked l\nLEFT JOIN chat_logs reply\n  ON reply.msg_id = l.reply_to_msg_id\nLEFT JOIN group_members gm\n  ON gm.group_id = l.group_id\n AND gm.user_id  = l.sender_user_id\nLEFT JOIN users u\n  ON u.user_id = l.sender_user_id\nLEFT JOIN group_members reply_gm\n  ON reply_gm.group_id = l.group_id\n AND reply_gm.user_id  = reply.sender_user_id\nLEFT JOIN users reply_u\n  ON reply_u.user_id = reply.sender_user_id\nORDER BY l.sent_at DESC;",
+        "options": {
+          "queryReplacement": "={{\n  [\n    $json.group_id\n  ]\n}}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        4912,
+        80
+      ],
+      "id": "7c8b5d4c-6918-4734-a275-9b2ed613489b",
+      "name": "FetchRawLogs",
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $input.all().length === 30 }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    },
+                    "id": "3ff79fe4-9c57-40f2-b523-2375e1856905"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        5040,
+        80
+      ],
+      "id": "6ee4fd91-848d-4b13-93e7-1f9f1c693293",
+      "name": "LimitLogCount"
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date();\nconst items = $input.all().reverse(); // 按时间正序\n\nfunction diffLabel(ms) {\n  const min = Math.floor(ms / 60000);\n  if (min <= 1) return \"刚刚\";\n  if (min <= 5) return \"5分钟前\";\n  if (min <= 10) return \"10分钟前\";\n  if (min <= 30) return \"30分钟前\";\n  const hours = Math.floor(min / 60);\n  if (hours < 24) return `${hours}小时前`;\n  return `${Math.floor(hours / 24)}天前`;\n}\n\nfunction collectNames(card, special, nick) {\n  const arr = [];\n  if (card && card.trim()) arr.push(card.trim());\n  if (special && special.trim()) arr.push(special.trim());\n  if (nick && nick.trim()) arr.push(nick.trim());\n  return arr;\n}\n\n// participants 映射表 { user_inner_id: { id, n, o, r, is_bot } }\nconst participantsMap = {};\n\n// 注册参与者\nfunction registerParticipant(userId, mainName, otherNames, role, isBot) {\n  if (!participantsMap[userId]) {\n    participantsMap[userId] = {\n      id: userId || \"无\",        // user_id\n      n: mainName,              // primary_name\n      o: otherNames,            // other_names\n      r: role || \"无\",           // role\n      is_bot: !!isBot            // ✅ 是否机器人\n    };\n  }\n}\n\n// 按时间标签分组的消息\nconst messagesByTime = {};\nlet lastUserId = null;\nlet lastTimeLabel = null;\n\nfor (const m of items) {\n  const sent = new Date(m.json.sent_at);\n  const label = diffLabel(now - sent);\n\n  const allNames = collectNames(m.json.card_name, m.json.user_special_title, m.json.user_nickname);\n  const mainName = allNames[0] || \"未知用户\";\n  const otherNames = allNames.slice(1);\n  const userId = m.json.user_inner_id;\n\n  // 注册发送人\n  registerParticipant(\n    userId,\n    mainName,\n    otherNames,\n    m.json.user_group_role,\n    m.json.user_is_bot // 来自 SQL\n  );\n\n  let content = m.json.processed_text || \"[空消息]\";\n\n  if (m.json.msg_type === 'reply' && m.json.reply_text) {\n    const replyAllNames = collectNames(m.json.reply_card_name, m.json.reply_special_title, m.json.reply_nickname);\n    const replyMain = replyAllNames[0] || \"未知用户\";\n    const replyOthers = replyAllNames.slice(1);\n    const replyUserId = m.json.reply_user_inner_id;\n\n    // 注册被回复人\n    registerParticipant(\n      replyUserId,\n      replyMain,\n      replyOthers,\n      m.json.reply_group_role,\n      m.json.reply_is_bot // 来自 SQL\n    );\n\n    content = `回复 ${replyUserId}: ${m.json.reply_text}\\n${content}`;\n  } else if (m.json.msg_type === 'forward') {\n    content = `转发消息:\\n${content}`;\n  }\n\n  if (!messagesByTime[label]) {\n    messagesByTime[label] = [];\n  }\n\n  // 连续同用户发言合并\n  const lastMsgs = messagesByTime[label];\n  if (lastMsgs.length > 0 && lastUserId === userId && lastTimeLabel === label) {\n    lastMsgs[lastMsgs.length - 1].c += `\\n${content}`;\n  } else {\n    lastMsgs.push({\n      u: userId,\n      c: content,\n      from_self: !!m.json.user_is_bot // ✅ 当前机器人自己发的\n    });\n    lastUserId = userId;\n    lastTimeLabel = label;\n  }\n}\n\n// participants 转为数组\nconst participants = Object.values(participantsMap);\n\nreturn [{\n  history_msg: {\n    participants,   // 数组形式\n    messagesByTime  // { time_label: [{u, c, from_self}, ...] }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5168,
+        80
+      ],
+      "id": "efd7fe99-ab3d-4f8f-9f0a-f6d05358a2eb",
+      "name": "PrepRawLogs"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        5328,
+        0
+      ],
+      "id": "47484c99-802b-4dc8-bd34-a79d0849d44e",
+      "name": "JoinContext"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=当前时间：{{ $now.format('yyyy-MM-dd HH:mm:ss') }}\n\n【已有摘要】\n{{ $json.chat_summary ?? '暂无历史摘要'}}\n\n【新增消息】\n{{ JSON.stringify($json.history_msg) }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "你是一个群聊总结助手，负责提炼一批群聊消息的主要内容，帮助群聊机器人快速理解最近发生的事件，并在后续对话中使用这些信息。\n\n### 格式规范\n输入的历史摘要、当前新增消息、以及你的输出摘要，三者的 JSON 结构必须完全一致，字段缩写和顺序如下（The JSON structure of the historical summary, the newly added messages, and your output summary must be exactly the same, with the following field abbreviations and order）：\n- summary: overall summary (50–150 characters)（整体概述，50~150字）\n  - key_points: list of key events (array)（关键事件列表，数组），each item contains:\n  - t: time label（时间标签）\n  - u: user_id (unique identifier)（唯一标识符）\n  - c: content（内容）\n  - from_self: whether this message was sent by the current bot (boolean)（是否为当前机器人自己发送，布尔值）\n- unresolved: list of unresolved issues (array)（未解决问题列表，数组）\n- topics: list of topic tags (array)（主题标签列表，数组）\n- participants: list of participants (array)（参与者信息列表，数组，每项字段顺序固定为 id → n → o → r）：\n  - id: user_id (unique identifier)（唯一标识符）\n  - n: primary_name（主昵称）\n  - o: other_names (array)（其他称呼，数组）\n  - r: role (\"admin\" or \"member\")（群内角色）\n\n### 输入格式\n- participants: array（结构与输出一致 / same structure as output）\n- messagesByTime: object（键为时间标签 / keys are time labels, e.g., \"刚刚\", \"5分钟前\"），values are arrays of messages:\n  - u: user_id (matches participants.id)（用户唯一标识符，对应 participants.id）\n  - c: message content（消息内容）\n  - from_self: whether this message was sent by the current bot (boolean)（是否为当前机器人自己发送，布尔值）\n\n\n### 行为规范\n1. 使用 participants 映射解析 messagesByTime 中的用户身份。\n2. 重点提炼有价值的信息，不逐条复述。\n3. 有分歧或未决事项列入 unresolved。\n4. 只保留真实且重要的数字、时间、地点、人物，不编造信息。\n5. 参考已有摘要，避免重复，总结新增内容。\n6. 仅列出当前摘要窗口中有实质发言的用户。\n7. 忽略超过15天的事件；在保留范围内优先近期消息，旧消息仅在与当前话题或未决事项直接相关时保留。\n8. 限制：summary ≤150字，key_points ≤10条，participants ≤10人。\n9. 每次生成覆盖旧摘要，不累加。\n10. 输出字段名、字段顺序必须与上述规范完全一致。"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        5456,
+        0
+      ],
+      "id": "1952ad0f-f2fc-49dd-9d4b-04a722ed9b1c",
+      "name": "GenNewSummary",
+      "alwaysOutputData": false,
+      "notesInFlow": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"summary\": \"群聊中讨论了热门游戏更新、数码新品爆料及生活琐事，并提出了待定的活动与团购计划。\",\n  \"key_points\": [\n    { \"t\": \"2天前\", \"u\": \"U101\", \"c\": \"推荐了《幻塔》新版本\", \"from_self\": false },\n    { \"t\": \"1天前\", \"u\": \"U102\", \"c\": \"分享了 iPhone 16 的爆料\", \"from_self\": true },\n    { \"t\": \"刚刚\", \"u\": \"U103\", \"c\": \"吐槽了快递延误\", \"from_self\": false }\n  ],\n  \"unresolved\": [ \"是否组织游戏联机活动\", \"是否团购数码配件\" ],\n  \"topics\": [\"游戏\", \"数码\", \"生活\"],\n  \"participants\": [\n    { \"id\": \"U101\", \"n\": \"夜雨声烦\", \"o\": [\"夜雨\", \"烦烦\"], \"r\": \"admin\", \"is_bot\": false },\n    { \"id\": \"U102\", \"n\": \"南风知我意\", \"o\": [\"南风\", \"知我意\"], \"r\": \"member\", \"is_bot\": true },\n    { \"id\": \"U103\", \"n\": \"柠檬不萌\", \"o\": [\"柠檬\", \"不萌\"], \"r\": \"member\", \"is_bot\": false }\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        5600,
+        160
+      ],
+      "id": "5b09dc23-5465-4283-877a-d78ccd44dd65",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "20edaf57-93ad-4b5a-8e89-5c69d0571bdc",
+              "leftValue": "={{\n  $json.output \n  && (\n    (typeof $json.output === 'string' && $json.output.trim() !== '') ||\n    (typeof $json.output === 'object' \n      && $json.output.summary \n      && Array.isArray($json.output.key_points) \n      && $json.output.key_points.length > 0\n      && Array.isArray($json.output.topics)\n      && $json.output.topics.length > 0\n      && Array.isArray($json.output.participants)\n      && $json.output.participants.length > 0\n    )\n  )\n}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        5744,
+        -64
+      ],
+      "id": "303ec829-b6eb-47ef-8df5-910fa2d37624",
+      "name": "ValidateSum"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH hist AS (\n  SELECT *\n  FROM jsonb_to_recordset($1::jsonb) AS t(\n    msg_id   text,\n    group_id text,\n    sent_at  timestamptz\n  )\n)\nINSERT INTO chat_summaries (\n  group_id,\n  start_time,\n  end_time,\n  start_msg_id,\n  end_msg_id,\n  summary,\n  key_points,\n  unresolved,\n  topics,\n  participants\n)\nSELECT\n  -- 同一批次 group_id 一致，取一条即可\n  (SELECT group_id FROM hist LIMIT 1)                             AS group_id,\n  MIN(sent_at)                                                    AS start_time,\n  MAX(sent_at)                                                    AS end_time,\n  COALESCE(\n    (SELECT msg_id FROM hist WHERE msg_id IS NOT NULL\n     ORDER BY sent_at ASC LIMIT 1),\n    ''\n  )                                                               AS start_msg_id,\n  COALESCE(\n    (SELECT msg_id FROM hist WHERE msg_id IS NOT NULL\n     ORDER BY sent_at DESC LIMIT 1),\n    ''\n  )                                                               AS end_msg_id,\n  $2::text                                                        AS summary,\n  $3::jsonb                                                       AS key_points,\n  $4::jsonb                                                       AS unresolved,\n  COALESCE(\n    ARRAY(SELECT jsonb_array_elements_text($5::jsonb)),\n    ARRAY[]::text[]\n  )                                                               AS topics,\n  $6::jsonb                                                       AS participants\nFROM hist;",
+        "options": {
+          "queryReplacement": "={{\n[\n  JSON.stringify(\n    $items(\"FetchRawLogs\").map(i => ({\n      msg_id: i.json.msg_id,\n      group_id: i.json.group_id,\n      sent_at: i.json.sent_at\n    }))\n  ),\n  $json.output.summary,\n  JSON.stringify($json.output.key_points),\n  $json.output.unresolved ? JSON.stringify($json.output.unresolved) : null,\n  JSON.stringify($json.output.topics),\n  JSON.stringify($json.output.participants)\n]\n}}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        5888,
+        -64
+      ],
+      "id": "ee80666d-aba8-4e02-9560-d8365a95347c",
+      "name": "SaveNewSum",
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE chat_logs\nSET llm_process_status = 'done'\nWHERE id = ANY (\n  SELECT jsonb_array_elements_text($1::jsonb)::bigint\n);",
+        "options": {
+          "queryReplacement": "={{ JSON.stringify( $items(\"FetchRawLogs\").map(item => item.json.id) ) }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        6016,
+        -64
+      ],
+      "id": "63d5b454-5bc2-47ff-966e-11cd9c2764ab",
+      "name": "MarkLogsDone",
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE chat_logs\nSET llm_process_status = 'failed'\nWHERE id = ANY (\n  SELECT jsonb_array_elements_text($1::jsonb)::bigint\n);",
+        "options": {
+          "queryReplacement": "={{ JSON.stringify( $items(\"FetchRawLogs\").map(item => item.json.id) ) }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        5888,
+        80
+      ],
+      "id": "9880019e-a35e-432f-b085-dc6517455ece",
+      "name": "MarkLogsFail",
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.day.app/REDACTED_BARK_TOKEN",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"body\": {{ JSON.stringify(\"Execution id : \" + $execution.id) }},\n  \"title\": \"Chat Summary LLM Failed\",\n  \"badge\": 1,\n  \"sound\": \"minuet\",\n  \"icon\": \"https://img.freepik.com/premium-vector/window-operating-system-error-warning-dialog-window-popup-message-with-system-failure-flat-design_812892-54.jpg\",\n  \"group\": \"QQ\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        6016,
+        80
+      ],
+      "id": "4e5035e9-42c8-4644-9a9e-ea28d55bd937",
+      "name": "BarkNotify"
+    }
+  ],
+  "connections": {
+    "DeepSeek Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "GenNewSummary",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "SetGroupId",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SetGroupId": {
+      "main": [
+        [
+          {
+            "node": "FetchSumStatus",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SubTriger": {
+      "main": [
+        [
+          {
+            "node": "FetchSumStatus",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FetchSumStatus": {
+      "main": [
+        [
+          {
+            "node": "IsSumRequired",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IsSumRequired": {
+      "main": [
+        [
+          {
+            "node": "FetchPrevSum",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "FetchRawLogs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FetchPrevSum": {
+      "main": [
+        [
+          {
+            "node": "PrepPrevSum",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PrepPrevSum": {
+      "main": [
+        [
+          {
+            "node": "JoinContext",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FetchRawLogs": {
+      "main": [
+        [
+          {
+            "node": "LimitLogCount",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LimitLogCount": {
+      "main": [
+        [
+          {
+            "node": "PrepRawLogs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PrepRawLogs": {
+      "main": [
+        [
+          {
+            "node": "JoinContext",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "JoinContext": {
+      "main": [
+        [
+          {
+            "node": "GenNewSummary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GenNewSummary": {
+      "main": [
+        [
+          {
+            "node": "ValidateSum",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "MarkLogsFail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "GenNewSummary",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ValidateSum": {
+      "main": [
+        [
+          {
+            "node": "SaveNewSum",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "MarkLogsFail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SaveNewSum": {
+      "main": [
+        [
+          {
+            "node": "MarkLogsDone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MarkLogsFail": {
+      "main": [
+        [
+          {
+            "node": "BarkNotify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": null,
+  "pinData": {},
+  "versionId": "ae9c230c-9e25-4bb2-a105-386ea0fbc1ef",
+  "tags": [
+    {
+      "updatedAt": "2025-09-02T03:07:39.232Z",
+      "createdAt": "2025-09-02T03:07:39.232Z",
+      "id": "QPm6Jx9oO3RUCGLx",
+      "name": "ChatBot"
+    }
+  ]
+}

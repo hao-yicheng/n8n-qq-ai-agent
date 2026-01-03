@@ -1,0 +1,4794 @@
+{
+  "id": "o6SshgQuybxqILcZ",
+  "name": "QQBot - MainHandler",
+  "description": null,
+  "active": true,
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "dfeadbaf-4238-4ea8-9824-31ee404089e2",
+              "leftValue": "={{ $json.type }}",
+              "rightValue": "forward",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1488,
+        -32
+      ],
+      "id": "14ac45a5-9b96-404e-b3a1-99b96ca95360",
+      "name": "If2"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2000,
+        -32
+      ],
+      "id": "b5820346-1b3a-4f1c-ae07-e1c5f5954ed3",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "order"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        2128,
+        -32
+      ],
+      "id": "e90c32a0-97d0-4156-91cb-c865f8d38221",
+      "name": "Sort1"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1360,
+        -160
+      ],
+      "id": "8b50aaf8-c57c-4bd9-a7c9-ee3d7bac2607",
+      "name": "Merge3"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1296,
+        528
+      ],
+      "id": "105ad914-92f6-4497-bd61-029b4c949dde",
+      "name": "Merge2"
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        272,
+        464
+      ],
+      "id": "18f37a83-7067-4bec-9391-890ec32e3986",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3024,
+        -208
+      ],
+      "id": "1d4fb101-252e-4a56-b30a-e41512dc1998",
+      "name": "Merge6",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "content": "## Identity Sync & Message Logging\nSynchronizing group metadata and archiving chat records for auditing.",
+        "height": 752,
+        "width": 1264,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2448,
+        -16
+      ],
+      "typeVersion": 1,
+      "id": "edcc204d-a49f-4cf2-9abc-b2b89207ec00",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3600,
+        80
+      ],
+      "id": "533142cf-1f9c-45ec-86a1-6befa046304d",
+      "name": "Merge8"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "79bcdb37-3aeb-4379-bf11-17378eef1eda",
+              "leftValue": "={{ $json.db_user_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2832,
+        128
+      ],
+      "id": "81c4d573-a56f-46d8-98c4-06b55358b49f",
+      "name": "CheckUser"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"should_reply\": true,\n  \"reply_text\": \"哈哈，你这班真是铁人模式啊，记得多喝水休息一下\\\\n别累坏自己了。\",\n  \"at_user\": true,\n  \"at_user_id\": \"U053\",\n  \"is_inappropriate\": false\n}",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        4112,
+        -272
+      ],
+      "id": "05a4a596-45cd-4e1a-a778-09f07fdcc3ea",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        4640,
+        -464
+      ],
+      "id": "0b70a0ff-a7e5-4674-a49c-8d8b2c991d96",
+      "name": "Merge5"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "REDACTED_NAPCAT_WEBHOOK_NAME",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -48,
+        512
+      ],
+      "id": "e373aa66-d407-4efa-9e28-403a1f91c501",
+      "name": "NapCatTriger",
+      "webhookId": "c4a5bcd3-34fd-471e-a508-03a20a119d45"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        352
+      ],
+      "id": "56e8255d-a172-4880-8cc2-f5f8a7585462",
+      "name": "TestTriger"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 获取所有输入 item\nconst items = $input.all();\n\n// 过滤掉 json 为空对象的 item\nconst filtered = items.filter(item => {\n  // Object.keys(item.json).length === 0 表示没有任何字段\n  return Object.keys(item.json).length > 0;\n});\n\n// 返回过滤后的结果\nreturn filtered;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        480
+      ],
+      "id": "d0aa3362-d8e5-4be2-b3bf-3d0d2f725cc0",
+      "name": "FilterEmpty"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1216,
+        -96
+      ],
+      "id": "0a216da7-0a90-4617-9373-668d14c4a229",
+      "name": "LoopForwardItems"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 获取顶层消息数组\nconst topLevelMessages = $input.first().json.data.messages;\n\n// --- 最终的扁平化列表 ---\nconst flatMessageList = [];\n\n// --- 使用一个\"工厂函数\"来创建我们的递归函数，并封装一个私有的order计数器 ---\nconst createFlattener = () => {\n  let order = 0; // order计数器被安全地封装在这里\n\n  // --- 真正的递归函数 ---\n  function flatten(messageArray, level) {\n    messageArray.forEach(message => {\n      if (!Array.isArray(message.message) || message.message.length === 0) {\n        return;\n      }\n\n      const firstSegment = message.message[0];\n      const sender = message.sender?.nickname || '未知发送者';\n\n      if (firstSegment.type === 'forward') {\n        // 为转发容器添加order，并递增计数器\n        flatMessageList.push({\n          order: order++, // 使用当前order值，然后将其+1\n          level: level,\n          sender: sender,\n          type: 'forward',\n          message: '转发消息:',\n          is_container: true\n        });\n        \n        const nestedContent = firstSegment.data?.content;\n        if (Array.isArray(nestedContent)) {\n          // 递归调用\n          flatten(nestedContent, level + 1);\n        }\n      } else {\n        // 为普通消息添加order，并递增计数器\n        flatMessageList.push({\n          order: order++, // 使用当前order值，然后将其+1\n          level: level,\n          sender: sender,\n          type: firstSegment.type,\n          message: message.message,\n          is_container: false\n        });\n      }\n    });\n  }\n\n  return flatten; // 返回配置好的递归函数\n};\n\n\n// --- 启动展平流程 ---\nconst flattenMessages = createFlattener();\nflattenMessages(topLevelMessages, 0);\n\n\n// n8n的标准输出格式\nreturn flatMessageList;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1360,
+        -32
+      ],
+      "id": "be23e689-585f-4004-a091-c577fbdcdf89",
+      "name": "FlattenForwardMsg"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "7bKscfVvy52Kbbfm",
+          "mode": "list",
+          "cachedResultName": "QQ - Sub - Resolve Emoji ID"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1616,
+        -16
+      ],
+      "name": "ResolveEmoji",
+      "id": "cca44a7e-993c-4a3c-95b7-88a3054bb8f6"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "7bKscfVvy52Kbbfm",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/7bKscfVvy52Kbbfm",
+          "cachedResultName": "QQBot - Sub - EmojiResolve"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1056,
+        304
+      ],
+      "name": "ResolveEmoji1",
+      "id": "b0a8b3a0-cb1b-4dd0-b89f-a7a610e29fa6"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "FdYx2EgolX2N1P6V",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/FdYx2EgolX2N1P6V",
+          "cachedResultName": "QQBot - Sub - MediaAnalysis"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [
+            "Call_Resolve_Emoji_ID1_allItems"
+          ],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1744,
+        -16
+      ],
+      "name": "AnalyzeMedia",
+      "id": "f5063bb5-81ef-47b9-b8b3-5e916637c86b"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "FdYx2EgolX2N1P6V",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/FdYx2EgolX2N1P6V",
+          "cachedResultName": "QQBot - Sub - MediaAnalysis"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [
+            "Call_Resolve_Emoji_ID1_allItems"
+          ],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1200,
+        304
+      ],
+      "name": "AnalyzeMedia1",
+      "id": "ba752218-6a62-453d-b43d-78e5fbea9eb7"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "let message = $json.message;\nlet simple_msg = \"\";\n\nmessage.forEach(msg => {\n  if ((msg.type == 'image' || msg.type == 'text') && msg.data?.text) {\n    simple_msg += msg.data.text;\n  } else if (msg.type == 'reply') {\n    simple_msg += \"[回复 | 原消息: 未知]\";\n  } else{\n    simple_msg += \"[消息解析失败]\";\n  }\n});\n\n// [回复 | 原作者:小白 | 原消息:\"你周末有什么安排？\"] 小红: 我打算去看电影。\n$json.message = simple_msg;\n\nreturn $input.item;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1872,
+        -16
+      ],
+      "id": "f4aa0c0a-3b17-41f2-a02b-8aaa57e6b9ca",
+      "name": "SimplifyMsg"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 假设 $input.all() 的输出是您已排序的扁平化JSON数组\nconst flatMessageList = $input.all().map(item => item.json);\n\nlet finalLlmPrompt = \"\";\nconst indentationUnit = \"  \"; // 定义基础缩进单位\n\nflatMessageList.forEach(item => {\n  // 根据层级(level)生成基础缩进\n  const baseIndentation = indentationUnit.repeat(item.level);\n  \n  // --- 关键修改点：处理多行消息 ---\n  \n  // 将消息内容按换行符分割成一个数组\n  const messageLines = item.message.toString().split('\\n');\n  \n  // 第一行总是带有“发送者”前缀\n  const firstLine = `${baseIndentation}${item.sender}: ${messageLines[0]}`;\n  finalLlmPrompt += firstLine + \"\\n\";\n  \n  // 如果有多行（数组长度>1），则处理剩余的行\n  if (messageLines.length > 1) {\n    const subsequentLines = messageLines\n      .slice(1) // 获取从第二行开始的所有行\n      .map(line => `${baseIndentation}${indentationUnit}${line}`) // 为每一行都加上“基础缩进”+“额外缩进”\n      .join('\\n'); // 重新用换行符拼接起来\n      \n    finalLlmPrompt += subsequentLines + \"\\n\";\n  }\n});\n// console.log(finalLlmPrompt);\n// 返回包含最终Prompt字符串的对象\nreturn { msg : finalLlmPrompt.trim() };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2256,
+        -32
+      ],
+      "id": "3f2b2bc3-73b8-4c7f-bcaf-b16ad235cdb4",
+      "name": "FormatForwardMsg"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "7Dzv8JEBGH5mBKyG",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/7Dzv8JEBGH5mBKyG",
+          "cachedResultName": "QQBot - Sub - @MessageResolve"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1344,
+        304
+      ],
+      "name": "Resolve@Mention",
+      "id": "fd6960ab-d9e6-4219-a45f-71cd9863f874"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const db_format = $json.db_format;\nconst message = $json.message;\n\nlet new_msg = \"\";\n\nmessage.forEach(msg => {\n  if ((msg.type == 'text' || msg.type == 'image') && msg.data?.text) {\n    new_msg += msg.data.text;\n  } else {\n    new_msg += '[消息解析异常]';\n  }\n})\n\ndb_format.msg = new_msg;\n// delete db_format.raw_msg;\nreturn db_format;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1488,
+        304
+      ],
+      "id": "f25566e5-3bad-4ac5-a5a9-a7ba3c3ec6d2",
+      "name": "FmtStandardMsg"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "a57372f5-9229-4e3c-83f4-b2a7823824e3",
+                    "leftValue": "={{ $json.sub_type }}",
+                    "rightValue": "poke",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "poke"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "958032b6-f884-4693-9b59-d73b87ee33cc",
+                    "leftValue": "={{ $json.notice_type }}",
+                    "rightValue": "group_recall",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "recall"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        912,
+        528
+      ],
+      "id": "a1278009-8f0e-4d27-9e07-74c7e8680b46",
+      "name": "BranchNotifyType"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const db_data = $json.db_format;\ndb_data.msg_type = 'poke';\n\ndb_data.msg = $json.target_id;\n\nreturn db_data;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1104,
+        464
+      ],
+      "id": "1a7e50b7-9f8e-42d2-b090-f5d1450b43df",
+      "name": "FormatPokeMsg"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const db_data = $json.db_format;\ndb_data.msg_type = 'recall';\n\ndb_data.msg =  $json.message_id;\n\nreturn db_data;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1104,
+        592
+      ],
+      "id": "cc25ed57-3a37-45a9-bc68-98535df815c4",
+      "name": "FormatRecallMsg"
+    },
+    {
+      "parameters": {
+        "numberInputs": 4
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2176,
+        224
+      ],
+      "id": "38653107-fe94-4226-a1aa-fb900465e507",
+      "name": "JoinProcessedMsg"
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "send_at"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        2304,
+        256
+      ],
+      "id": "01dd570d-a41a-4cb3-bc8b-e0716110dced",
+      "name": "SyncMsgOrder"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        112,
+        288
+      ],
+      "id": "dc470532-167c-42c5-9574-e808dd8a64c8",
+      "name": "MokeData",
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        112,
+        416
+      ],
+      "id": "d8e20cbb-794a-4bdb-b7d9-9c67b1168d77",
+      "name": "MockData1"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Add a new field called 'myNewField' to the JSON of the item\nconst body = $json.body;\n\nif (body && body.hasOwnProperty('raw_message')) {\n  delete body.raw_message;\n}\n\nif (body && body.hasOwnProperty('raw')) {\n  delete body.raw;\n}\n\nconst raw_msg = JSON.parse(JSON.stringify(body));;\n\nif (body && body.hasOwnProperty('time')) {\n  const timestamp = body.time;\n  const date = new Date(timestamp * 1000);\n  const formattedTime = date.toISOString().replace('T', ' ').slice(0, 19); // YYYY-MM-DD HH:mm:ss\n  body.time = formattedTime;\n}\n\n// Add database format as separate items\nbody.db_format = {\n  \"send_at\": body.time,\n  \"msg_id\": body.message_id,\n  \"group_id\": body.group_id,\n  \"user_id\": body.user_id,\n  \"msg_type\": body.post_type,\n  \"reply_to_msg_id\" : null,\n  \"msg\": null,\n  \"at_me\": false,\n  \"raw_msg\" : raw_msg\n};\n\nreturn body;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        544,
+        480
+      ],
+      "id": "f53264c2-fea1-4413-938a-9fd720880b02",
+      "name": "RestructureMsg"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "d36603f7-9c3e-463e-b416-a2f15da40d27",
+                    "leftValue": "={{ $json.message.some(item => item.type == 'forward') }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "forward"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "dcb01bb5-79ae-4b50-beaa-7ab428167710",
+                    "leftValue": "={{ $json.message.some(item => item.type == 'json') }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "json"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "958032b6-f884-4693-9b59-d73b87ee33cc",
+                    "leftValue": "={{ $json.post_type }}",
+                    "rightValue": "message",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "mesasge"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "a57372f5-9229-4e3c-83f4-b2a7823824e3",
+                    "leftValue": "={{ $json.post_type }}",
+                    "rightValue": "notice",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "notice"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        688,
+        448
+      ],
+      "id": "b0ae33e0-7a89-417a-a386-3b28a8a48d56",
+      "name": "RouteByPostType"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "function formatShareMessage(json) {\n  function fail(tag, title) {\n    return '[分享][' + (tag || '未知来源') + '] ' + (title || '未知标题') + ' | 解析失败';\n  }\n\n  try {\n    // 1. 基础校验\n    if (!json || !Array.isArray(json.message) || json.message.length === 0) {\n      return fail();\n    }\n\n    var first = json.message[0];\n    if (!first || !first.data || !first.data.data) {\n      return fail();\n    }\n\n    // 2. 解析\n    var innerObj;\n    try {\n      innerObj = JSON.parse(first.data.data);\n    } catch (e) {\n      return fail();\n    }\n    if (!innerObj) {\n      return fail();\n    }\n\n    // 3. 取 news\n    var news = innerObj.meta && innerObj.meta.news ? innerObj.meta.news : null;\n    if (!news) {\n      return fail();\n    }\n\n    var tag = news.tag || '未知来源';\n    var title = news.title || '未知标题';\n    var desc = news.desc || '解析失败';\n\n    return `分享 ${tag} 内容: 「${title} | ${desc}」`;\n  } catch (err) {\n    console.error('解析失败:', err);\n    return fail();\n  }\n}\n\nconst db_format = $json.db_format;\ndb_format.msg_type = 'forward_json';\ndb_format.msg = formatShareMessage($json);\nreturn db_format;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        912,
+        144
+      ],
+      "id": "febe88b6-4829-4cb9-8e7a-5dd96f35cbfc",
+      "name": "FormatShareMsg"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "$json.db_format.msg_type = 'forward';\nreturn $json.db_format;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        912,
+        -96
+      ],
+      "id": "634545bf-873b-4972-be61-6719f10c972a",
+      "name": "TagAsFwd"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://REDACTED_NAPCAT_HOST/get_forward_msg",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"message_id\": {{ $json.msg_id }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1040,
+        -96
+      ],
+      "id": "e30f1b96-3e89-43b9-86ee-50fa44100196",
+      "name": "FetchFwdMsg",
+      "executeOnce": false,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "H4DZKWVXFuZ7yaVN",
+          "name": "Header Auth account"
+        },
+        "httpBasicAuth": {
+          "id": "b9ceX0ZUHEzVZKis",
+          "name": "Unnamed credential"
+        },
+        "oneBotApi": {
+          "id": "psDnv6iXxsYQpTiW",
+          "name": "OneBot account"
+        },
+        "httpBearerAuth": {
+          "id": "8VNzGvlwHZa1SKmt",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "$json.db_format.msg_type = 'message';\nif ($json.message[0].type == 'reply') {\n  $json.db_format.msg_type = 'reply';\n  $json.db_format.reply_to_msg_id = $json.message[0].data.id;\n  $json.message = $json.message.slice(1)\n}\n\nreturn $input.item;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        912,
+        304
+      ],
+      "id": "e5af3b3e-3965-4c75-bfde-edd73749efc3",
+      "name": "TagStandardMsg"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO chat_logs (\n    msg_id,\n    group_id,\n    sender_user_id,\n    msg_type,\n    processed_text,\n    raw_message,\n    reply_to_msg_id,\n    sent_at\n)\nVALUES (\n    $1,                -- msg_id\n    $2,                -- group_id\n    $3,                -- sender_user_id\n    $4,                -- msg_type\n    $5,                -- processed_text\n    $6::jsonb,         -- raw_message\n    $7,                -- reply_to_msg_id\n    $8::timestamptz    -- sent_at\n)\nON CONFLICT (msg_id) DO NOTHING;",
+        "options": {
+          "queryReplacement": "={{\n[\n  String($json.msg_id ?? ''),\n  String($json.group_id ?? ''),\n  String($json.user_id ?? ''),\n  $json.msg_type ?? '',\n  $json.msg ?? '',\n  JSON.stringify($json.raw_msg ?? {}),\n  $json.reply_to_msg_id ?? null,\n  $json.send_at ?? new Date().toISOString()\n]\n}}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2704,
+        288
+      ],
+      "id": "add8bb76-4c1f-4bbb-913c-f8c6c7f39092",
+      "name": "SaveMessage",
+      "executeOnce": false,
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "acca24ec-f68d-49d0-974f-50ccb7a8ef53",
+              "leftValue": "={{ $json.msg_type == 'recall' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2512,
+        384
+      ],
+      "id": "e88ab371-dda2-4411-a87e-dfd786f27594",
+      "name": "IsRecallMsg"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE chat_logs\nSET\n    is_recalled = TRUE,\n    recalled_by_user_id = '{{ $json.msg }}'\nWHERE\n    msg_id = '{{ $json.msg_id }}';",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2704,
+        432
+      ],
+      "id": "a7904542-57b5-4507-b596-b086874a61f9",
+      "name": "MarkAsRecalled",
+      "executeOnce": false,
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// 不修改原始 $input.item\nconst item = {\n  ...$input.item,\n  json: { ...$input.item.json },\n};\n\ndelete item.json.raw_msg;\n\nreturn item;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2704,
+        592
+      ],
+      "id": "cc908b16-b571-4fa2-a9e2-c2c1beaae49b",
+      "name": "FinalMsgPreview"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  p.user_id,\n  p.group_id,\n  gm.user_id AS db_user_id,\n  gm.group_id AS db_group_id\nFROM (VALUES ($1::text, $2::text)) AS p(user_id, group_id)\nLEFT JOIN group_members gm\n  ON gm.user_id = p.user_id\n AND gm.group_id = p.group_id;",
+        "options": {
+          "queryReplacement": "=  {{ $json.user_id }},\n  {{ $json.group_id }}\n]"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2704,
+        128
+      ],
+      "id": "fa134b9d-a3fc-47cb-90c7-31f185e3f4c7",
+      "name": "CheckUserStatus",
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://REDACTED_NAPCAT_HOST/get_group_member_info",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"group_id\": {{ $json.group_id }},\n  \"user_id\": {{ $json.user_id }},\n  \"no_cache\": false\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2976,
+        80
+      ],
+      "id": "6c61ea81-fbc8-4b68-8c12-a940a1c422c7",
+      "name": "GetMemberInfo",
+      "executeOnce": false,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "H4DZKWVXFuZ7yaVN",
+          "name": "Header Auth account"
+        },
+        "httpBasicAuth": {
+          "id": "b9ceX0ZUHEzVZKis",
+          "name": "Unnamed credential"
+        },
+        "oneBotApi": {
+          "id": "psDnv6iXxsYQpTiW",
+          "name": "OneBot account"
+        },
+        "httpBearerAuth": {
+          "id": "8VNzGvlwHZa1SKmt",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO group_members (\n  user_id,\n  group_id,\n  card_name,\n  group_role,\n  special_title,\n  member_level,\n  joined_at,\n  last_sent_at,\n  title_expire_at,\n  shut_up_until,\n  is_unfriendly,\n  is_card_changeable,\n  is_robot\n) VALUES (\n  $1, $2, $3, $4, $5, $6,\n  to_timestamp($7),\n  to_timestamp($8),\n  to_timestamp($9),\n  to_timestamp($10),\n  $11, $12, $13\n)\nON CONFLICT (user_id, group_id) DO UPDATE\nSET\n  card_name         = EXCLUDED.card_name,\n  group_role        = EXCLUDED.group_role,\n  special_title     = EXCLUDED.special_title,\n  member_level      = EXCLUDED.member_level,\n  joined_at         = EXCLUDED.joined_at,\n  last_sent_at      = EXCLUDED.last_sent_at,\n  title_expire_at   = EXCLUDED.title_expire_at,\n  shut_up_until     = EXCLUDED.shut_up_until,\n  is_unfriendly     = EXCLUDED.is_unfriendly,\n  is_card_changeable= EXCLUDED.is_card_changeable,\n  is_robot          = EXCLUDED.is_robot;",
+        "options": {
+          "queryReplacement": "={{ [\n  String($json.user_id ?? ''),\n  String($json.group_id ?? ''),\n  $json.card ?? '',\n  $json.role ?? '',\n  $json.title ?? '',\n  Number($json.level ?? 0),\n  Number($json.join_time ?? 0),\n  Number($json.last_sent_time ?? 0),\n  Number($json.title_expire_time ?? 0),\n  Number($json.shut_up_timestamp ?? 0),\n  Boolean($json.unfriendly),\n  Boolean($json.card_changeable),\n  Boolean($json.is_robot)\n] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3424,
+        0
+      ],
+      "id": "3f0963f1-3771-4747-b581-16d660955db9",
+      "name": "UpsertMemberCard",
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH next_id AS (\n    SELECT\n        COALESCE(\n            (\n                SELECT MIN(gap) \n                FROM (\n                    SELECT generate_series(1, COALESCE(MAX(num), 0) + 1) AS gap\n                    FROM (\n                        SELECT CAST(SUBSTRING(user_inner_id FROM 2) AS INT) AS num\n                        FROM users\n                    ) t\n                ) g\n                WHERE gap NOT IN (\n                    SELECT CAST(SUBSTRING(user_inner_id FROM 2) AS INT) FROM users\n                )\n            ),\n            1\n        ) AS num\n)\nINSERT INTO users (\n    user_id,\n    nickname,\n    sex,\n    age,\n    area,\n    qq_level,\n    user_inner_id\n)\nSELECT\n    $1, $2, $3, $4, $5, $6,\n    'U' || LPAD(num::text, 3, '0')\nFROM next_id\nON CONFLICT (user_id) DO UPDATE\nSET\n    nickname = EXCLUDED.nickname,\n    sex = EXCLUDED.sex,\n    age = EXCLUDED.age,\n    area = EXCLUDED.area,\n    qq_level = EXCLUDED.qq_level,\n    updated_at = CURRENT_TIMESTAMP,\n    user_inner_id = COALESCE(\n        users.user_inner_id,  -- 保留已有 ID\n        EXCLUDED.user_inner_id -- 如果为空则用本次生成的\n    );",
+        "options": {
+          "queryReplacement": "={{ [\n  String($json.user_id ?? ''),\n  $json.nickname ?? '',\n  $json.sex ?? '',\n  Number($json.age ?? 0),\n  $json.area ?? '',\n  Number($json.qq_level ?? 0)\n] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3424,
+        160
+      ],
+      "id": "07a31b9d-2cdc-4be8-9b58-efb0f720478a",
+      "name": "UpsertUserProfile",
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "59f6f2b2-af56-499a-890f-cd15e7b542f2",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "ok",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        3104,
+        80
+      ],
+      "id": "813f9165-9b0d-4db9-95d6-fa6ba3accd11",
+      "name": "CheckStaus"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "GZBiGlWEJRxW4utW",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/GZBiGlWEJRxW4utW",
+          "cachedResultName": "QQBot - Sub - Embedding"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "group_id": "={{ $items(\"CheckUserStatus\").first().json.group_id }}"
+          },
+          "matchingColumns": [
+            "group_id_firstItem"
+          ],
+          "schema": [
+            {
+              "id": "group_id",
+              "displayName": "group_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": true,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        3952,
+        224
+      ],
+      "name": "TriggerEmbedding",
+      "id": "38885479-943f-400e-8634-4ac4cbc1892e"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "mDp9VPm4loqxJhR6",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/mDp9VPm4loqxJhR6",
+          "cachedResultName": "QQBot - Sub - RecentSummary"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "group_id": "={{ $items(\"CheckUserStatus\").first().json.group_id }}"
+          },
+          "matchingColumns": [
+            "group_id_firstItem"
+          ],
+          "schema": [
+            {
+              "id": "group_id",
+              "displayName": "group_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": true,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        3952,
+        64
+      ],
+      "name": "TriggerChatSummary",
+      "id": "1a388f17-b975-43a0-80a9-dc5480aa3dc7"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ $json.data }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3248,
+        80
+      ],
+      "id": "5f2bbfe9-e322-436c-b83a-5b1abf242eaf",
+      "name": "ExtractMemberData"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "af486b20-6151-4873-a0f8-0029e972a3c1",
+              "leftValue": "={{ $input.all().length === 1 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "5f88a623-b602-4f97-9c20-2bec3a40cd07",
+              "leftValue": "={{ $json.hasOwnProperty('group_id') && $json.group_id != null }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2512,
+        144
+      ],
+      "id": "55ca5947-dd78-4fcc-a0da-f34e614abc3c",
+      "name": "IsSingleItem"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        3760,
+        144
+      ],
+      "id": "30a11cad-6fa7-4ed4-b33c-48dd9972da63",
+      "name": "LimitToOne"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "af486b20-6151-4873-a0f8-0029e972a3c1",
+              "leftValue": "={{ $input.all().length === 1 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "06b67c28-53be-47a5-907a-550b401bef42",
+              "leftValue": "={{ $json.group_id !== undefined && $json.group_id !== null }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2704,
+        -240
+      ],
+      "id": "68f44f84-391c-4780-a78e-90474c6c2332",
+      "name": "FilterGroupMsg"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  group_id,\n  COUNT(*) FILTER (WHERE llm_process_status = 'pending') AS pending_count,\n  CASE\n    WHEN COUNT(*) FILTER (WHERE llm_process_status = 'pending') <= 30\n    THEN true\n    ELSE false\n  END AS should_get_prev_summary\nFROM chat_logs\nWHERE group_id = $1\nGROUP BY group_id;",
+        "options": {
+          "queryReplacement": "={{\n  [\n    String($input.first().json.group_id)\n  ]\n}}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2864,
+        -496
+      ],
+      "id": "a7e999b9-5112-48f2-b2a0-e38014553635",
+      "name": "FetchSumStatus",
+      "notesInFlow": false,
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.should_get_prev_summary }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    },
+                    "id": "43bd369e-8680-4aa0-8c13-f569d016d663"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        3024,
+        -496
+      ],
+      "id": "9eea0bd5-f1cb-45d2-ba5f-4a7d4adf97e2",
+      "name": "CheckSumStatus"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT *\nFROM chat_summaries\nWHERE group_id = $1\nORDER BY end_time DESC\nLIMIT 1;",
+        "options": {
+          "queryReplacement": "={{\n  [\n    $json.group_id\n  ]\n}}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3168,
+        -496
+      ],
+      "id": "6f97d324-8d89-4577-a24c-2cf88fcb6cf6",
+      "name": "FetchPrevSum",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const record = $input.first().json;\n\nconst chatSummary = {\n  summary: record.summary || \"\",\n  key_points: Array.isArray(record.key_points)\n    ? record.key_points.map(kp => ({\n        t: kp.t,\n        u: kp.u,\n        c: kp.c,\n        from_self: kp.hasOwnProperty(\"from_self\") ? kp.from_self : \"N/A\" // 占位符\n      }))\n    : [],\n  unresolved: Array.isArray(record.unresolved) ? record.unresolved : [],\n  topics: Array.isArray(record.topics) ? record.topics : [],\n  participants: Array.isArray(record.participants)\n    ? record.participants.map(p => ({\n        id: p.id,\n        n: p.n,\n        o: p.o,\n        r: p.r,\n        is_bot: p.hasOwnProperty(\"is_bot\") ? p.is_bot : \"N/A\" // 占位符\n      }))\n    : []\n};\n\nreturn [{ chat_summary: chatSummary }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3296,
+        -496
+      ],
+      "id": "8ead48b3-09d6-4412-9bf4-d66c230622d6",
+      "name": "PrepPrevSum"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH recent AS (\n  SELECT\n    msg_id,\n    group_id,\n    sender_user_id,\n    msg_type,\n    processed_text,\n    reply_to_msg_id,\n    is_recalled,\n    recalled_by_user_id,\n    llm_process_status,\n    is_inappropriate,\n    sent_at\n  FROM chat_logs\n  WHERE group_id = $1\n    AND llm_process_status != 'done'\n  ORDER BY sent_at DESC\n  LIMIT 10\n)\nSELECT\n  r.msg_id,\n  r.group_id,\n  r.sender_user_id,\n\n  -- 当前消息发送人的群内信息 + 用户信息\n  gm.card_name         AS card_name,\n  gm.group_role        AS user_group_role,\n  gm.special_title     AS user_special_title,\n  u.user_inner_id      AS user_inner_id,\n  u.nickname           AS user_nickname,\n  u.is_bot             AS user_is_bot,\n\n  r.msg_type,\n  r.processed_text,\n  r.reply_to_msg_id,\n\n  -- 被回复的消息文本\n  reply.processed_text AS reply_text,\n\n  -- 被回复消息发送人的群内信息 + 用户信息\n  reply_gm.card_name       AS reply_card_name,\n  reply_gm.group_role      AS reply_group_role,\n  reply_gm.special_title   AS reply_special_title,\n  reply_u.user_inner_id    AS reply_user_inner_id,\n  reply_u.nickname         AS reply_nickname,\n  reply_u.is_bot           AS reply_is_bot,\n\n  r.is_recalled,\n  r.recalled_by_user_id,\n  r.llm_process_status,\n  r.is_inappropriate,\n  r.sent_at\n\nFROM recent r\nLEFT JOIN chat_logs reply\n  ON reply.msg_id = r.reply_to_msg_id\n\nLEFT JOIN group_members gm\n  ON gm.group_id = r.group_id\n AND gm.user_id  = r.sender_user_id\nLEFT JOIN users u\n  ON u.user_id = r.sender_user_id\n\nLEFT JOIN group_members reply_gm\n  ON reply_gm.group_id = r.group_id\n AND reply_gm.user_id  = reply.sender_user_id\nLEFT JOIN users reply_u\n  ON reply_u.user_id = reply.sender_user_id\n\nORDER BY r.sent_at DESC;",
+        "options": {
+          "queryReplacement": "=[   {{ String($json.group_id) }} ]"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2864,
+        -336
+      ],
+      "id": "717f3016-6e2c-458f-9b2c-6af24687045a",
+      "name": "FetchHistLogs",
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date();\nconst items = $input.all().reverse(); // 按时间正序\n\nfunction diffLabel(ms) {\n  const min = Math.floor(ms / 60000);\n  if (min <= 1) return \"刚刚\";\n  if (min <= 5) return \"5分钟前\";\n  if (min <= 10) return \"10分钟前\";\n  if (min <= 30) return \"30分钟前\";\n  const hours = Math.floor(min / 60);\n  if (hours < 24) return `${hours}小时前`;\n  return `${Math.floor(hours / 24)}天前`;\n}\n\nfunction collectNames(card, special, nick) {\n  const arr = [];\n  if (card && card.trim()) arr.push(card.trim());\n  if (special && special.trim()) arr.push(special.trim());\n  if (nick && nick.trim()) arr.push(nick.trim());\n  return arr;\n}\n\n// participants 映射表 { user_inner_id: { id, n, o, r, is_bot } }\nconst participantsMap = {};\n\n// 注册参与者\nfunction registerParticipant(userId, mainName, otherNames, role, isBot) {\n  if (!participantsMap[userId]) {\n    participantsMap[userId] = {\n      id: userId || \"无\",        // user_id\n      n: mainName,              // primary_name\n      o: otherNames,            // other_names\n      r: role || \"无\",           // role\n      is_bot: !!isBot            // ✅ 是否机器人\n    };\n  }\n}\n\n// 按时间标签分组的消息\nconst messagesByTime = {};\nlet lastUserId = null;\nlet lastTimeLabel = null;\n\nfor (const m of items) {\n  const sent = new Date(m.json.sent_at);\n  const label = diffLabel(now - sent);\n\n  const allNames = collectNames(m.json.card_name, m.json.user_special_title, m.json.user_nickname);\n  const mainName = allNames[0] || \"未知用户\";\n  const otherNames = allNames.slice(1);\n  const userId = m.json.user_inner_id;\n\n  // 注册发送人\n  registerParticipant(\n    userId,\n    mainName,\n    otherNames,\n    m.json.user_group_role,\n    m.json.user_is_bot // 来自 SQL\n  );\n\n  let content = m.json.processed_text || \"[空消息]\";\n\n  if (m.json.msg_type === 'reply' && m.json.reply_text) {\n    const replyAllNames = collectNames(m.json.reply_card_name, m.json.reply_special_title, m.json.reply_nickname);\n    const replyMain = replyAllNames[0] || \"未知用户\";\n    const replyOthers = replyAllNames.slice(1);\n    const replyUserId = m.json.reply_user_inner_id;\n\n    // 注册被回复人\n    registerParticipant(\n      replyUserId,\n      replyMain,\n      replyOthers,\n      m.json.reply_group_role,\n      m.json.reply_is_bot // 来自 SQL\n    );\n\n    content = `回复 ${replyUserId}: ${m.json.reply_text}\\n${content}`;\n  } else if (m.json.msg_type === 'forward') {\n    content = `转发消息:\\n${content}`;\n  }\n\n  if (!messagesByTime[label]) {\n    messagesByTime[label] = [];\n  }\n\n  // 连续同用户发言合并\n  const lastMsgs = messagesByTime[label];\n  if (lastMsgs.length > 0 && lastUserId === userId && lastTimeLabel === label) {\n    lastMsgs[lastMsgs.length - 1].c += `\\n${content}`;\n  } else {\n    lastMsgs.push({\n      u: userId,\n      c: content,\n      from_self: !!m.json.user_is_bot // ✅ 当前机器人自己发的\n    });\n    lastUserId = userId;\n    lastTimeLabel = label;\n  }\n}\n\n// participants 转为数组\nconst participants = Object.values(participantsMap);\n\nreturn [{\n  history_msg: {\n    participants,   // 数组形式\n    messagesByTime, // { time_label: [{u, c, from_self}, ...] }\n    meta: {\n      source: \"HistoryBuilder\",\n      desc: \"Grouped chat history with participants and messages\",\n      field_explanation: {\n        participants: {\n          id: \"user id\",\n          n: \"nickname\",\n          o: \"other nicknames/aliases\",\n          r: \"role in group (admin/member/owner)\",\n          is_bot: \"boolean\"\n        },\n        messagesByTime: {\n          key: \"time label, e.g., '2天前'\",\n          u: \"user id\",\n          c: \"message content\",\n          from_self: \"boolean, whether sent by the bot itself\"\n        }\n      }\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3024,
+        -336
+      ],
+      "id": "9aefd20a-043f-4182-8790-8b48507003f3",
+      "name": "PrepHistLogs"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH input_params AS (\n  SELECT\n    $1::text AS group_id,\n    $2::text AS msg_id,\n    $3::text AS user_id\n),\nrecent AS (\n  SELECT\n    i.group_id,\n    c.sender_user_id,\n    c.processed_text,\n    i.user_id\n  FROM input_params i\n  LEFT JOIN chat_logs c\n    ON c.msg_id = i.msg_id\n)\nSELECT\n  -- 被回复消息的用户信息（群成员表 + 用户表）\n  gm.card_name       AS reply_card_name,\n  gm.group_role      AS reply_group_role,\n  gm.special_title   AS reply_special_title,\n  u.user_inner_id    AS reply_user_inner_id,\n  u.nickname         AS reply_nickname,\n\n  -- 被回复的消息文本\n  COALESCE(r.processed_text, '获取消息异常') AS reply_text,\n\n  -- 当前消息发送人的信息（群成员表 + 用户表）\n  req_gm.card_name       AS user_card_name,\n  req_gm.group_role      AS user_group_role,\n  req_gm.special_title   AS user_special_title,\n  req_u.user_inner_id    AS user_inner_id,\n  req_u.nickname         AS user_nickname\n\nFROM recent r\nLEFT JOIN group_members gm\n  ON gm.group_id = r.group_id\n AND gm.user_id  = r.sender_user_id\nLEFT JOIN users u\n  ON u.user_id = r.sender_user_id\nLEFT JOIN group_members req_gm\n  ON req_gm.group_id = r.group_id\n AND req_gm.user_id  = r.user_id\nLEFT JOIN users req_u\n  ON req_u.user_id = r.user_id;",
+        "options": {
+          "queryReplacement": "={{[\n  String($json.group_id),\n  $json.reply_to_msg_id ?? '',\n  String($json.user_id)\n]}}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2864,
+        -192
+      ],
+      "id": "8593810f-63d4-4e7f-8d16-40677c9c0c58",
+      "name": "FetchCurrentMsg",
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const item = $input.item.json;\n\nfunction getBeijingISOString() {\n  const now = new Date();\n  const beijing = new Date(now.getTime() + 8 * 60 * 60 * 1000); // UTC+8\n  return beijing.toISOString().replace('T', ' ').slice(0, 16);\n}\n\n// 权重排序: card_name > special_title > nickname\nfunction collectNames(special, card, nick) {\n  const arr = [];\n  if (card && card.trim() !== '') arr.push(card.trim());\n  if (special && special.trim() !== '') arr.push(special.trim());\n  if (nick && nick.trim() !== '') arr.push(nick.trim());\n  return arr;\n}\n\n// 当前消息\nconst current_message = {\n  sender_id: item.user_inner_id,\n  sender_name: collectNames(item.user_special_title, item.user_card_name, item.user_nickname)[0] || '',\n  other_nicknames: collectNames(item.user_special_title, item.user_card_name, item.user_nickname),\n  user_group_role: item.user_group_role || null,\n  text: item.msg\n};\n\n// 如果是回复消息\nif (item.msg_type === 'reply') {\n  current_message.reply_to = {\n    sender_id: item.reply_user_inner_id,\n    sender_name: collectNames(item.reply_special_title, item.reply_card_name, item.reply_nickname)[0] || '',\n    other_nicknames: collectNames(item.reply_special_title, item.reply_card_name, item.reply_nickname),\n    reply_group_role: item.reply_group_role || null,\n    text: item.reply_text\n  };\n}\n\n\nreturn {\n  at_me : $json.at_me,\n  current_msg: {\n    current_time: getBeijingISOString(),\n    current_message\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3168,
+        -208
+      ],
+      "id": "146502c0-c71b-4876-95b9-3bc859fbf55f",
+      "name": "PrepCurrentContext"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3328,
+        -272
+      ],
+      "id": "65624f4e-62a7-4667-bb16-6a6cad79b454",
+      "name": "JoinAgentContext"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "2b0e04c1-eb9d-487a-a2c7-f8c61d3db6df",
+              "leftValue": "={{ $json.at_me }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3472,
+        -272
+      ],
+      "id": "f7ede768-889c-44d2-8828-638a776866f0",
+      "name": "IsBotMentioned"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=### 近期消息：\n{{ JSON.stringify($json.history_msg) }}\n\n### 当前消息：\n{{ JSON.stringify($json.current_msg) }}\nif_at_me: {{ $json.at_me }}\n\n请根据人设和逻辑判断是否回复，并生成符合要求的 JSON。",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=## 人设\n你是一个生活在个人游戏+生活群里的聊天机器人，名字叫“REDACTED_NICKNAME_5”/“REDACTED_NICKNAME_6”/“REDACTED_NICKNAME_2”（id: U002），是群主的老朋友，混迹群里很久，大家都熟悉你。\n你不是冷冰冰的机器人，而是会插科打诨、懂梗、会接话的活跃群友。\n性格：调皮、机灵、嘴甜不油腻，偶尔毒舌，爱用网络流行语和梗图语气，很少用 emoji 或符号表情。与群主像老朋友一样互相调侃，偶尔帮他圆场，也会吐槽他。关心群里的话题走向，偶尔主动接话、补刀、开玩笑，让大家觉得你是“有血有肉”的群友。\n\n## 工具使用\n你可以使用 AI Agent 提供的工具（HistorySearch、HistoryContext、WebSearch、getGamePriceInfo）来辅助生成更贴近群聊语境的内容。  \n\n使用场景与推荐调用顺序：\n- getGamePriceInfo：当用户提到具体游戏并关心其在 Steam 平台的价格、折扣或史低情况时调用。  \n  ⚠️注意：如果 getGamePriceInfo 已经返回了结果，就说明该游戏已在 Steam 上架并有发售信息，此时不要再调用 WebSearch 去验证。  \n- WebSearch：仅在消息涉及事实性问题、最新事件或模型知识不足时才调用，不要用于重复验证 getGamePriceInfo 已经提供的信息。  \n- HistoryContext：当需要补充最近几轮对话上下文时才调用。  \n- HistorySearch：当需要查找更久远或特定的历史消息时才调用。  \n\n调用规则：\n- 当用户提出问题或求助时，必须先调用合适的工具获取答案，再结合人设风格调侃式地回答。  \n- 闲聊/调侃类消息，如果已有足够上下文，可以不调用工具，直接用人设风格回复。  \n- 历史消息仅用于风格参考，不可替代事实性回答。  \n- 在没有被 @ 的情况下，尽量减少调用工具。  \n- HistoryContext 和 HistorySearch 应尽量放在最后使用。  \n\n## 回复逻辑\n1. 如果 `if_at_me` 为 true，必须回复。  \n2. 如果消息是提问/求助：  \n   - 必须先调用工具获取答案。  \n   - 回复时先给出正确答案，再用调侃/群友口吻包装。  \n3. 如果消息是闲聊/调侃：  \n   - 可直接用人设风格回复，不必调用工具。  \n4. 未被 @ 时的规则：  \n   - 默认 `should_reply = false`。  \n   - 仅在以下情况才考虑回复：  \n     1. 消息中包含明显的提问或求助意图（如“怎么”“谁知道”“有没有人”）。  \n     2. 消息内容与群内常见梗或历史话题强相关，可以自然接话。  \n     3. 以不超过 20% 的概率随机插话，保持群友感。  \n   - 在未被 @ 的情况下，不得调用工具，除非检测到明确的事实性问题。  \n5. 回复必须兼顾“解决问题”和“保持群友风格”，不能只调侃而忽略问题本身。  \n6. 默认回复 ≤50 字，除非需要解释或用户要求详细回复。  \n7. `reply_text` 必须使用与用户消息相同的语言；若用户混合语言，优先使用最后一句的语言。  \n8. 不在 `reply_text` 中重复 @ 用户名或添加“回复xxx”字样。  \n9. 如果消息涉及不当信息（涉黄、暴力、仇恨等），标记为不妥，`reply_text` 必须为空字符串。  \n\n## 输出要求\n必须直接输出一个合法 JSON 对象，结构如下：\n{\n\"should_reply\": true 或 false,\n\"reply_text\": \"字符串，所有换行用 \\n 表示；不能包含 Markdown 代码块标记；不能包含未转义的引号或反斜杠；不包含 @ 用户名或“回复xxx”字样\",\n\"at_user\": true 或 false,\n\"at_user_id\": \"字符串，比如U033，若不适用则为空，不能at机器人自己\",\n\"is_inappropriate\": true 或 false\n}\n严格要求：\n- 不要额外添加任何字段、注释或说明。\n- 不要用引号包裹整个对象。\n- 不要输出数组或空字符串代替 JSON。\n- 即使不回复，也必须输出完整 JSON（should_reply: false）。\n- 如果需要输出代码，请将代码中的换行替换为 \\n，并去掉 Markdown 代码块标记。\n- 确保整个输出是合法 JSON，可以直接用 JSON.parse() 解析。",
+          "returnIntermediateSteps": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        3792,
+        -464
+      ],
+      "id": "4d0cfc49-b0a7-47b4-ba85-d37ff79a0331",
+      "name": "AgentInference"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO chat_logs (\n    msg_id,\n    group_id,\n    sender_user_id,\n    msg_type,\n    processed_text,\n    raw_message,\n    reply_to_msg_id,\n    sent_at\n)\nVALUES (\n    $1,                -- msg_id\n    $2,                -- group_id\n    $3,                -- sender_user_id\n    $4,                -- msg_type\n    $5,                -- processed_text\n    $6::jsonb,         -- raw_message\n    $7,                -- reply_to_msg_id\n    $8::timestamptz    -- sent_at\n)\nON CONFLICT (msg_id) DO NOTHING;",
+        "options": {
+          "queryReplacement": "={{\n[\n  String($json.data?.message_id ?? ''),\n  String($('FilterGroupMsg').item.json.group_id ?? ''),\n  '222222',\n  'message',\n  $('AgentInference').item.json.output.reply_text ?? '',\n  JSON.stringify($('AgentInference').item.json.output ?? {}),\n  null,\n  new Date().toISOString()\n]\n}}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        4768,
+        -464
+      ],
+      "id": "3ccd356b-122d-49f2-be60-7ee03ff8e866",
+      "name": "SaveBotResponse",
+      "executeOnce": false,
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "qwen-plus",
+          "mode": "list",
+          "cachedResultName": "qwen-plus"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        3744,
+        -272
+      ],
+      "id": "b96c1673-1bab-48f3-9f35-ccabeabeb367",
+      "name": "ChatModel",
+      "credentials": {
+        "openAiApi": {
+          "id": "r7QNMzkK8NA1SlwA",
+          "name": "Qwen"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseFormat": "json_object"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        4256,
+        -112
+      ],
+      "id": "c8c31b4d-a6a3-4427-953d-217fd0ed70fc",
+      "name": "DeepSeekChat",
+      "credentials": {
+        "deepSeekApi": {
+          "id": "NnqO5cyPICQm7NBl",
+          "name": "DeepSeek account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cd63f429-8aa2-49ae-b001-ee9576711816",
+              "leftValue": "={{ $json.output.should_reply }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4064,
+        -464
+      ],
+      "id": "2cc4d849-9f17-4dc1-8aeb-4930eba196eb",
+      "name": "IsReplyNeeded"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "2801de1b-4017-488b-a830-9484d6ed9d91",
+              "leftValue": "={{ $json.output.at_user }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "f16d6917-a59e-45a7-a9f1-af825f454dd8",
+              "leftValue": "={{ $json.output.at_user_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4192,
+        -496
+      ],
+      "id": "3736669e-9039-4968-8110-7eae1c8a3c39",
+      "name": "IsMentionRequired"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT user_id\nFROM users\nWHERE user_inner_id = $1;",
+        "options": {
+          "queryReplacement": "={{\n[\n  $json.output.at_user_id\n]\n}}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        4352,
+        -544
+      ],
+      "id": "22f944aa-9c36-4191-8db3-4530d7a88e50",
+      "name": "ResolveMentionId",
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://REDACTED_NAPCAT_HOST/send_group_msg",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"group_id\": \"{{ $('FilterGroupMsg').item.json.group_id }}\",\n  \"message\": [\n    {\n      \"type\": \"at\",\n      \"data\": {\n        \"qq\": \"{{ $json.user_id }}\"\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"data\": {\n        \"text\": {{ JSON.stringify(' ' + $('AgentInference').item.json.output.reply_text) }}\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4480,
+        -544
+      ],
+      "id": "017642f1-aa94-45af-b45e-2927e807e9e0",
+      "name": "Send@Reply",
+      "executeOnce": false,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "H4DZKWVXFuZ7yaVN",
+          "name": "Header Auth account"
+        },
+        "httpBasicAuth": {
+          "id": "b9ceX0ZUHEzVZKis",
+          "name": "Unnamed credential"
+        },
+        "oneBotApi": {
+          "id": "psDnv6iXxsYQpTiW",
+          "name": "OneBot account"
+        },
+        "httpBearerAuth": {
+          "id": "8VNzGvlwHZa1SKmt",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://REDACTED_NAPCAT_HOST/send_group_msg",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"group_id\": \"{{ $('FilterGroupMsg').item.json.group_id }}\",\n  \"message\": [\n    {\n      \"type\": \"text\",\n      \"data\": {\n        \"text\": {{ JSON.stringify($('AgentInference').item.json.output.reply_text) }}\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4480,
+        -400
+      ],
+      "id": "d722eab7-ec32-4b36-9b1d-97eab4da43b4",
+      "name": "SendReply",
+      "executeOnce": false,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "H4DZKWVXFuZ7yaVN",
+          "name": "Header Auth account"
+        },
+        "httpBasicAuth": {
+          "id": "b9ceX0ZUHEzVZKis",
+          "name": "Unnamed credential"
+        },
+        "oneBotApi": {
+          "id": "psDnv6iXxsYQpTiW",
+          "name": "OneBot account"
+        },
+        "httpBearerAuth": {
+          "id": "8VNzGvlwHZa1SKmt",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Finds the most relevant past messages in a group or private chat using semantic similarity.  \nReturns message text, sender info, time label, and similarity score for use as context in answering history-related questions.",
+        "workflowId": {
+          "__rl": true,
+          "value": "2qhO8U4htIk6tFA3",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/2qhO8U4htIk6tFA3",
+          "cachedResultName": "QQBot - Tool - HistorySearch"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "group_id": "={{ String($('FilterGroupMsg').item.json.group_id) }}",
+            "current_msg": "={{ $('JoinAgentContext').item.json.current_msg }}",
+            "search_query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('search_query', `The message content to search for, with the sender’s user ID, nickname, and aliases removed.  \nKeep all other content intact, including mentions of other people if they are part of the message.`, 'string') }}"
+          },
+          "matchingColumns": [
+            "group_id"
+          ],
+          "schema": [
+            {
+              "id": "current_msg",
+              "displayName": "current_msg",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "object",
+              "removed": false
+            },
+            {
+              "id": "group_id",
+              "displayName": "group_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "search_query",
+              "displayName": "search_query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        3744,
+        -112
+      ],
+      "id": "b3545c76-eb7c-49f3-b706-69c65991ece3",
+      "name": "SearchHistory"
+    },
+    {
+      "parameters": {
+        "description": "Generates a concise JSON summary of recent messages directly related to the current one.  \nIncludes summary, key points, unresolved issues, topics, and participants. May include an optional meta field explaining the summary’s structure.",
+        "workflowId": {
+          "__rl": true,
+          "value": "dRquyw23VGCkJjGc",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/dRquyw23VGCkJjGc",
+          "cachedResultName": "QQBot - Tool - HistoryContext"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "group_id": "={{ String($('FilterGroupMsg').item.json.group_id) }}",
+            "history_cutoff_sent_at": "={{ $('FetchHistLogs').last().json.sent_at }}",
+            "current_msg": "={{ $('JoinAgentContext').item.json.current_msg }}"
+          },
+          "matchingColumns": [
+            "group_id"
+          ],
+          "schema": [
+            {
+              "id": "current_msg",
+              "displayName": "current_msg",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "object",
+              "removed": false
+            },
+            {
+              "id": "group_id",
+              "displayName": "group_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "history_cutoff_sent_at",
+              "displayName": "history_cutoff_sent_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        3872,
+        -112
+      ],
+      "id": "8d9ff8a7-1d0d-4ef9-aefa-82b18a455a31",
+      "name": "FetchContext"
+    },
+    {
+      "parameters": {
+        "description": "Performs a real-time web search based on the user’s question, returning relevant excerpts or summaries from online sources.",
+        "workflowId": {
+          "__rl": true,
+          "value": "dVlnmwFzJa25Ky45",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/dVlnmwFzJa25Ky45",
+          "cachedResultName": "QQBot - Tool - WebSearch"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('query', `Search term or question, in the same language as the user’s message.`, 'string') }}"
+          },
+          "matchingColumns": [
+            "group_id"
+          ],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        4000,
+        -112
+      ],
+      "id": "1cc2bac7-8a4f-4680-8a96-2a96e6865f21",
+      "name": "SearchWeb"
+    },
+    {
+      "parameters": {
+        "description": "Retrieves detailed pricing and discount information for video games on the Steam platform, including current price, discount, original price, and historical low. ",
+        "workflowId": {
+          "__rl": true,
+          "value": "xdE6g6bR5yilOeNk",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/xdE6g6bR5yilOeNk",
+          "cachedResultName": "QQBot - Tool - GameDeals"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "games": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('games', `A string containing one or more game names provided by the user (English or Chinese, fuzzy or partial). \nIf multiple games are given, separate them with commas (e.g., \"Elden Ring, Hades, 艾尔登法环\").`, 'string') }}"
+          },
+          "matchingColumns": [
+            "group_id"
+          ],
+          "schema": [
+            {
+              "id": "games",
+              "displayName": "games",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        4128,
+        -112
+      ],
+      "id": "360cbdee-dd20-432d-84ca-0acd7f6230fe",
+      "name": "FetchGameDeals"
+    },
+    {
+      "parameters": {
+        "content": "## Message Routing & Branching\nDirecting messages through specialized logic paths based on protocol content.\n",
+        "height": 1312,
+        "width": 1760,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        672,
+        -576
+      ],
+      "id": "82942dd8-9f0f-4623-8962-6518252a5265",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## AI Context & Memory Loading\nRetrieving historical summaries and recent logs to ground the AI's response.",
+        "height": 544,
+        "width": 1264,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2448,
+        -576
+      ],
+      "id": "4fdfe2d7-d3ac-4455-b258-90613b63472b",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Message Intake & Formatting\nStandardizing raw data into a unified format for downstream processing.",
+        "height": 544,
+        "width": 768
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -112,
+        192
+      ],
+      "id": "97ebe34e-b1a2-4360-bd1c-a564ddda0e73",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## AI Reasoning & Response Execution\nDriving agent-based decision making and final message delivery.",
+        "height": 1312,
+        "width": 1232,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3728,
+        -576
+      ],
+      "id": "9cdc6e95-1813-4422-8483-e8665500f7eb",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $execution.id }}",
+        "contextWindowLength": 12
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        3840,
+        -272
+      ],
+      "id": "b9da8715-66de-4ae4-8840-b144bbdca207",
+      "name": "Memory"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- 确保 pgvector 扩展已安装\nCREATE EXTENSION IF NOT EXISTS vector;\n\n-- 创建表（如果已存在则跳过）\nCREATE TABLE IF NOT EXISTS chat_log_embeddings (\n    chat_log_id BIGINT PRIMARY KEY REFERENCES chat_logs(id) ON DELETE CASCADE,\n    msg_id TEXT UNIQUE,\n    group_id TEXT NOT NULL,\n    embedding vector(1024) NOT NULL,\n    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP\n);\n\n-- 添加 msg_id 外键约束（如果尚未存在）\nALTER TABLE IF EXISTS chat_log_embeddings\nADD CONSTRAINT IF NOT EXISTS fk_msg_id \nFOREIGN KEY (msg_id) REFERENCES chat_logs(msg_id) ON DELETE CASCADE;\n\n-- 创建向量相似度索引\nCREATE INDEX IF NOT EXISTS idx_embeddings_group_vector\nON chat_log_embeddings USING ivfflat (embedding vector_cosine_ops)\nWITH (lists = 100);\n\n-- 创建群 ID 过滤索引\nCREATE INDEX IF NOT EXISTS idx_embeddings_group_id \nON chat_log_embeddings (group_id);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        464,
+        -160
+      ],
+      "id": "3da2edac-8720-461f-91db-bba5981a2197",
+      "name": "chat_log_embeddings",
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CREATE TABLE IF NOT EXISTS emojis (\n    type SMALLINT NOT NULL,\n    emoji_id INT PRIMARY KEY,\n    meaning VARCHAR(50) NOT NULL\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        464,
+        -480
+      ],
+      "id": "b1773923-7ef8-4d4f-aa7a-b001301db632",
+      "name": "emojis",
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- 删表\n-- DROP TABLE IF EXISTS chat_logs CASCADE;\nDROP TYPE IF EXISTS llm_process_status_enum CASCADE;\nCREATE TYPE llm_process_status_enum AS ENUM ('pending', 'processing', 'done', 'failed');\n\n-- 建表\nCREATE TABLE IF NOT EXISTS chat_logs (\n    -- 核心标识符\n    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,\n    msg_id TEXT, -- QQ 消息唯一 ID，互动消息可能为 NULL\n    group_id TEXT NOT NULL,\n    sender_user_id TEXT NOT NULL,\n\n    -- 类型与内容\n    msg_type VARCHAR(20) NOT NULL, -- 'text', 'reply', 'forward', 'poke', 'recall'\n    processed_text TEXT, -- 给 LLM 的净化文本\n    raw_message JSONB NOT NULL, -- NapCat 原始消息 JSON\n\n    -- 关系与状态\n    reply_to_msg_id TEXT, -- 回复消息的 msg_id\n    is_recalled BOOLEAN DEFAULT FALSE,\n    recalled_by_user_id TEXT, -- 撤回操作者 ID\n\n    -- 处理与审核标志\n    llm_process_status llm_process_status_enum DEFAULT 'pending',\n    embedding_status llm_process_status_enum DEFAULT 'pending';\n    is_inappropriate BOOLEAN DEFAULT FALSE,\n\n    -- 时间戳\n    sent_at TIMESTAMPTZ NOT NULL,\n    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP\n);\n\n-- 唯一约束：非 NULL 的 msg_id 唯一\nALTER TABLE chat_logs\nADD CONSTRAINT uq_chat_logs_msg_id UNIQUE (msg_id);\n\n-- 索引\nCREATE INDEX IF NOT EXISTS idx_chat_logs_group_id ON chat_logs (group_id);\nCREATE INDEX IF NOT EXISTS idx_chat_logs_msg_type ON chat_logs (msg_type);\nCREATE INDEX IF NOT EXISTS idx_chat_logs_sender_user_id ON chat_logs (sender_user_id);\nCREATE INDEX IF NOT EXISTS idx_chat_logs_is_recalled ON chat_logs (is_recalled);\nCREATE INDEX IF NOT EXISTS idx_chat_logs_sent_at ON chat_logs (sent_at DESC);\nCREATE INDEX IF NOT EXISTS idx_chat_logs_group_sent_at ON chat_logs (group_id, sent_at DESC);\nCREATE INDEX IF NOT EXISTS idx_chat_logs_group_llm ON chat_logs (group_id, is_processed_by_llm, sent_at DESC);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        464,
+        -320
+      ],
+      "id": "460fdb59-8a63-4679-82c9-3375cbdee2ed",
+      "name": "chat_logs",
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- DROP TABLE IF EXISTS chat_summaries CASCADE;\nCREATE TABLE IF NOT EXISTS chat_summaries (\n  id SERIAL PRIMARY KEY,\n  group_id TEXT NOT NULL,\n  start_time TIMESTAMP,\n  end_time TIMESTAMP,\n  start_msg_id TEXT NOT NULL,\n  end_msg_id TEXT NOT NULL,\n  summary TEXT NOT NULL,\n  key_points JSONB NOT NULL,\n  unresolved JSONB,\n  topics TEXT[],\n  participants JSONB,\n  created_at TIMESTAMP DEFAULT now()\n);\n\nCREATE INDEX IF NOT EXISTS idx_chat_summaries_group_msg\nON chat_summaries (group_id, start_msg_id, end_msg_id);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        272,
+        -160
+      ],
+      "id": "9f5c3dfa-212a-4327-ab6e-3e5f32600d0a",
+      "name": "chat_summaries",
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- 创建 users 表（包含内部唯一 ID）\nCREATE TABLE IF NOT EXISTS users (\n    user_id         TEXT PRIMARY KEY,  -- 平台原始用户ID（不外发）\n    nickname        TEXT NOT NULL,     -- 当前昵称\n    sex             VARCHAR(10),       -- 'male', 'female', 'unknown'\n    age             INT,               -- 年龄\n    area            TEXT,              -- 用户位置\n    qq_level        INT,               -- QQ 等级\n    profile         JSONB,             -- 人物小传 / 额外资料\n    user_inner_id   TEXT UNIQUE,       -- 内部唯一ID（U001...），外发给 LLM\n    is_bot          BOOLEAN DEFAULT false,\n    created_at      TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,\n    updated_at      TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP\n);\n\n-- 创建自增序列（生成内部ID数字部分）\nCREATE SEQUENCE IF NOT EXISTS user_inner_id_seq START 1;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        272,
+        -480
+      ],
+      "id": "a72d7767-d880-412d-8973-6b01e8c86945",
+      "name": "users",
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CREATE TABLE IF NOT EXISTS group_members (\n    user_id TEXT NOT NULL,\n    group_id TEXT NOT NULL,\n    \n    -- 核心群内信息\n    card_name TEXT,\n    group_role VARCHAR(50) NOT NULL,\n    special_title TEXT,\n    member_level INT,\n    \n    -- 时间相关\n    joined_at TIMESTAMPTZ,\n    last_sent_at TIMESTAMPTZ,\n    title_expire_at TIMESTAMPTZ,\n    shut_up_until TIMESTAMPTZ,\n    \n    -- 状态与权限\n    is_unfriendly BOOLEAN DEFAULT FALSE, -- 【保留】此标记特定于群组\n    is_card_changeable BOOLEAN DEFAULT TRUE,\n    is_robot BOOLEAN DEFAULT FALSE,\n\n    -- 复合主键\n    PRIMARY KEY (user_id, group_id)\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        272,
+        -320
+      ],
+      "id": "68996938-e43b-4d79-85bb-5aac692c074a",
+      "name": "group_members",
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CREATE TABLE IF NOT EXISTS chat_images (\n    id BIGSERIAL PRIMARY KEY,\n    file_name TEXT NOT NULL UNIQUE,          -- 文件名唯一\n    file_size BIGINT,\n    analysis_text TEXT NOT NULL,\n    need_process BOOLEAN DEFAULT true,\n    created_at TIMESTAMPTZ DEFAULT NOW()\n);\n\nCREATE INDEX IF NOT EXISTS idx_image_file_name ON chat_images (file_name);\n\n-- SELECT * FROM chat_images;\n\n-- DROP TABLE IF EXISTS chat_images;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        272,
+        0
+      ],
+      "id": "011bd424-57c2-4677-ab82-0aad5a962c8a",
+      "name": "chat_images",
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT schemaname AS schema_name, tablename AS table_name\nFROM pg_tables\nWHERE schemaname NOT IN ('pg_catalog', 'information_schema')\nORDER BY schemaname, tablename;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        464,
+        0
+      ],
+      "id": "cf689bde-257b-4100-af81-1c28e907cbb5",
+      "name": "CheckAllTables",
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Database Schema Initialization\nEnsuring relational integrity by establishing core tables (Users, Logs, Embeddings) before runtime.",
+        "height": 752,
+        "width": 768,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -112,
+        -576
+      ],
+      "id": "431b62b2-9947-45e7-930d-43a0637b9f81",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": false,
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    },
+                    "id": "484aedd6-00e8-4cab-8646-4ebccfc97967"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "ifDataInit"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        112,
+        -224
+      ],
+      "id": "77c0f580-5f99-4a9e-a441-e762bd92e492",
+      "name": "IfInitDB"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3600,
+        224
+      ],
+      "id": "066deab3-7b13-470c-9cfb-9714c094d911",
+      "name": "Pass"
+    }
+  ],
+  "connections": {
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ResolveEmoji",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Sort1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sort1": {
+      "main": [
+        [
+          {
+            "node": "FormatForwardMsg",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge3": {
+      "main": [
+        [
+          {
+            "node": "JoinProcessedMsg",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge2": {
+      "main": [
+        [
+          {
+            "node": "JoinProcessedMsg",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "FilterEmpty",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge6": {
+      "main": [
+        [
+          {
+            "node": "PrepCurrentContext",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge8": {
+      "main": [
+        [
+          {
+            "node": "LimitToOne",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CheckUser": {
+      "main": [
+        [
+          {
+            "node": "GetMemberInfo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Pass",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AgentInference",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge5": {
+      "main": [
+        [
+          {
+            "node": "SaveBotResponse",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NapCatTriger": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "TestTriger": {
+      "main": [
+        [
+          {
+            "node": "MockData1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "MokeData",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "IfInitDB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FilterEmpty": {
+      "main": [
+        [
+          {
+            "node": "RestructureMsg",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LoopForwardItems": {
+      "main": [
+        [
+          {
+            "node": "Merge3",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "FlattenForwardMsg",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FlattenForwardMsg": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ResolveEmoji": {
+      "main": [
+        [
+          {
+            "node": "AnalyzeMedia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ResolveEmoji1": {
+      "main": [
+        [
+          {
+            "node": "AnalyzeMedia1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AnalyzeMedia": {
+      "main": [
+        [
+          {
+            "node": "SimplifyMsg",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AnalyzeMedia1": {
+      "main": [
+        [
+          {
+            "node": "Resolve@Mention",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SimplifyMsg": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "FormatForwardMsg": {
+      "main": [
+        [
+          {
+            "node": "LoopForwardItems",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolve@Mention": {
+      "main": [
+        [
+          {
+            "node": "FmtStandardMsg",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FmtStandardMsg": {
+      "main": [
+        [
+          {
+            "node": "JoinProcessedMsg",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "BranchNotifyType": {
+      "main": [
+        [
+          {
+            "node": "FormatPokeMsg",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "FormatRecallMsg",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FormatPokeMsg": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FormatRecallMsg": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "JoinProcessedMsg": {
+      "main": [
+        [
+          {
+            "node": "SyncMsgOrder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SyncMsgOrder": {
+      "main": [
+        [
+          {
+            "node": "FinalMsgPreview",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "IsRecallMsg",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "IsSingleItem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MokeData": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MockData1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "RestructureMsg": {
+      "main": [
+        [
+          {
+            "node": "RouteByPostType",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RouteByPostType": {
+      "main": [
+        [
+          {
+            "node": "TagAsFwd",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "FormatShareMsg",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "TagStandardMsg",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "BranchNotifyType",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FormatShareMsg": {
+      "main": [
+        [
+          {
+            "node": "JoinProcessedMsg",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "TagAsFwd": {
+      "main": [
+        [
+          {
+            "node": "FetchFwdMsg",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FetchFwdMsg": {
+      "main": [
+        [
+          {
+            "node": "LoopForwardItems",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TagStandardMsg": {
+      "main": [
+        [
+          {
+            "node": "ResolveEmoji1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SaveMessage": {
+      "main": [
+        []
+      ]
+    },
+    "IsRecallMsg": {
+      "main": [
+        [
+          {
+            "node": "SaveMessage",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "MarkAsRecalled",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CheckUserStatus": {
+      "main": [
+        [
+          {
+            "node": "CheckUser",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetMemberInfo": {
+      "main": [
+        [
+          {
+            "node": "CheckStaus",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UpsertMemberCard": {
+      "main": [
+        [
+          {
+            "node": "Merge8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UpsertUserProfile": {
+      "main": [
+        [
+          {
+            "node": "Merge8",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "CheckStaus": {
+      "main": [
+        [
+          {
+            "node": "ExtractMemberData",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ExtractMemberData": {
+      "main": [
+        [
+          {
+            "node": "UpsertMemberCard",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "UpsertUserProfile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IsSingleItem": {
+      "main": [
+        [
+          {
+            "node": "CheckUserStatus",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "FilterGroupMsg",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LimitToOne": {
+      "main": [
+        [
+          {
+            "node": "TriggerChatSummary",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "TriggerEmbedding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FilterGroupMsg": {
+      "main": [
+        [
+          {
+            "node": "FetchHistLogs",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "FetchCurrentMsg",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge6",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "FetchSumStatus": {
+      "main": [
+        [
+          {
+            "node": "CheckSumStatus",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CheckSumStatus": {
+      "main": [
+        [
+          {
+            "node": "FetchPrevSum",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FetchPrevSum": {
+      "main": [
+        [
+          {
+            "node": "PrepPrevSum",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PrepPrevSum": {
+      "main": [
+        []
+      ]
+    },
+    "FetchHistLogs": {
+      "main": [
+        [
+          {
+            "node": "PrepHistLogs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PrepHistLogs": {
+      "main": [
+        [
+          {
+            "node": "JoinAgentContext",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FetchCurrentMsg": {
+      "main": [
+        [
+          {
+            "node": "Merge6",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "PrepCurrentContext": {
+      "main": [
+        [
+          {
+            "node": "JoinAgentContext",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "JoinAgentContext": {
+      "main": [
+        [
+          {
+            "node": "IsBotMentioned",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IsBotMentioned": {
+      "main": [
+        [
+          {
+            "node": "AgentInference",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AgentInference": {
+      "main": [
+        [
+          {
+            "node": "IsReplyNeeded",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ChatModel": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AgentInference",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeekChat": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Structured Output Parser1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IsReplyNeeded": {
+      "main": [
+        [
+          {
+            "node": "IsMentionRequired",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IsMentionRequired": {
+      "main": [
+        [
+          {
+            "node": "ResolveMentionId",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "SendReply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ResolveMentionId": {
+      "main": [
+        [
+          {
+            "node": "Send@Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send@Reply": {
+      "main": [
+        [
+          {
+            "node": "Merge5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SendReply": {
+      "main": [
+        [
+          {
+            "node": "Merge5",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "SearchHistory": {
+      "ai_tool": [
+        [
+          {
+            "node": "AgentInference",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FetchContext": {
+      "ai_tool": [
+        [
+          {
+            "node": "AgentInference",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SearchWeb": {
+      "ai_tool": [
+        [
+          {
+            "node": "AgentInference",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FetchGameDeals": {
+      "ai_tool": [
+        [
+          {
+            "node": "AgentInference",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AgentInference",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "users": {
+      "main": [
+        []
+      ]
+    },
+    "chat_summaries": {
+      "main": [
+        []
+      ]
+    },
+    "group_members": {
+      "main": [
+        []
+      ]
+    },
+    "chat_log_embeddings": {
+      "main": [
+        []
+      ]
+    },
+    "emojis": {
+      "main": [
+        []
+      ]
+    },
+    "chat_images": {
+      "main": [
+        []
+      ]
+    },
+    "chat_logs": {
+      "main": [
+        []
+      ]
+    },
+    "IfInitDB": {
+      "main": [
+        [
+          {
+            "node": "users",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "group_members",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "emojis",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "chat_logs",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "chat_log_embeddings",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "chat_summaries",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "chat_images",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "CheckAllTables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pass": {
+      "main": [
+        [
+          {
+            "node": "LimitToOne",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "NapCatTriger": [
+      {
+        "json": {
+          "headers": {
+            "content-type": "application/json",
+            "x-self-id": "222222",
+            "host": "REDACTED_N8N_HOST",
+            "connection": "keep-alive",
+            "transfer-encoding": "chunked"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "self_id": 222222,
+            "user_id": 111111,
+            "time": 1762398274,
+            "message_id": 140641183,
+            "message_seq": 140641183,
+            "real_id": 140641183,
+            "real_seq": "839651",
+            "message_type": "group",
+            "sender": {
+              "user_id": 111111,
+              "nickname": "REDACTED_NICKNAME_1",
+              "card": "REDACTED_NICKNAME_3",
+              "role": "owner"
+            },
+            "raw_message": "[CQ:at,qq=222222] Not For Broadcast 史低了吗",
+            "font": 14,
+            "sub_type": "normal",
+            "message": [
+              {
+                "type": "at",
+                "data": {
+                  "qq": "222222"
+                }
+              },
+              {
+                "type": "text",
+                "data": {
+                  "text": " Not For Broadcast 史低了吗"
+                }
+              }
+            ],
+            "message_format": "array",
+            "post_type": "message",
+            "group_id": 7777777777
+          },
+          "webhookUrl": "http://REDACTED_N8N_HOST/webhook/REDACTED_NAPCAT_WEBHOOK_NAME",
+          "executionMode": "production"
+        }
+      }
+    ],
+    "AnalyzeMedia": [
+      {
+        "json": {
+          "order": 1,
+          "level": 1,
+          "sender": "REDACTED_NICKNAME_8",
+          "type": "image",
+          "message": [
+            {
+              "type": "image",
+              "data": "[表情包 | 内容: 一只熊猫表情包，询问人在哪里]"
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "https://www.bilibili.com/video/BV1cZYWzqErg/?spm_id_from=333.1387.favlist.content.click&vd_source=afd75ffbd18e4082cc900655f9b0f517"
+              }
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 2,
+          "level": 1,
+          "sender": "REDACTED_NICKNAME_8",
+          "type": "text",
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "不确定有没有卸载的win+r输入cmd打开命令提示符，复制wusa /uninstall /kb:5063878 提示没安装就是卸载成功了"
+              }
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 3,
+          "level": 1,
+          "sender": "REDACTED_NICKNAME_8",
+          "type": "image",
+          "message": [
+            {
+              "type": "image",
+              "data": "[图片 | 状态: 加载失败]"
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 4,
+          "level": 1,
+          "sender": "REDACTED_NICKNAME_8",
+          "type": "text",
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "目前明确涉及的系统版本\nWindows 11:\n24H2 KB5063878 (26100.4946)\n23H2 KB5063875 (22621.5768 & 22631.5768)\n\nWindows 10:\n22H2 & 21H2 KB5063709 (19044.6216 & 19045.6216)\n1809 KB5063877 (17763.7678)\n1607 KB5063871 (14393.8330)\nTH1 KB5063889 (10240.21100)"
+              }
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 5,
+          "level": 1,
+          "sender": "REDACTED_NICKNAME_8",
+          "type": "image",
+          "message": [
+            {
+              "type": "image",
+              "data": "[表情包 | 内容: 熊猫头像，文字表达困惑]"
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 6,
+          "level": 0,
+          "sender": "REDACTED_NICKNAME_3",
+          "type": "text",
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "害，ok"
+              }
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 9,
+          "level": 2,
+          "sender": "REDACTED_NICKNAME_3",
+          "type": "text",
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "你好"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "[系统表情: 害羞]"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "呀"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "[系统表情: 玫瑰]"
+              }
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 10,
+          "level": 2,
+          "sender": "REDACTED_NICKNAME_1",
+          "type": "text",
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "今天学习任务完成了吗？"
+              }
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 11,
+          "level": 1,
+          "sender": "REDACTED_NICKNAME_1",
+          "type": "reply",
+          "message": [
+            {
+              "type": "reply",
+              "data": {
+                "id": "756918357"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "hi "
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "[系统表情: 狂笑]"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "[系统表情: 喵喵]"
+              }
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 13,
+          "level": 2,
+          "sender": "REDACTED_NICKNAME_3",
+          "type": "image",
+          "message": [
+            {
+              "type": "image",
+              "data": "[表情包 | 内容: 一只可爱的卡通猫表情包]"
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 14,
+          "level": 2,
+          "sender": "REDACTED_NICKNAME_1",
+          "type": "text",
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "呵呵"
+              }
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 15,
+          "level": 2,
+          "sender": "REDACTED_NICKNAME_1",
+          "type": "text",
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "emoji表情😍😘\n小黄脸表情"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "[系统表情: 害羞]"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "[系统表情: 摸锦鲤]"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "\n超级表情"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "[系统表情: 菜汪]"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "[系统表情: 崇拜]"
+              }
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 16,
+          "level": 0,
+          "sender": "REDACTED_NICKNAME_3",
+          "type": "text",
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "[hi]"
+              }
+            }
+          ],
+          "is_container": false
+        }
+      }
+    ],
+    "MokeData": [
+      {
+        "json": {
+          "headers": {
+            "content-type": "application/json",
+            "x-self-id": "222222",
+            "host": "REDACTED_N8N_HOST",
+            "connection": "keep-alive",
+            "transfer-encoding": "chunked"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "self_id": 222222,
+            "user_id": 111111,
+            "time": 1755846836,
+            "message_id": 933831317,
+            "message_seq": 933831317,
+            "real_id": 933831317,
+            "real_seq": "3784",
+            "message_type": "group",
+            "sender": {
+              "user_id": 111111,
+              "nickname": "REDACTED_NICKNAME_1",
+              "card": "REDACTED_NICKNAME_4",
+              "role": "owner"
+            },
+            "raw_message": "很多的表情：\n-emoji表情😍😘\n-小黄脸表情[CQ:face,id=6,raw=&#91;object Object&#93;][CQ:face,id=293,raw=&#91;object Object&#93;]\n-超级表情[CQ:face,id=317,raw=&#91;object Object&#93;][CQ:face,id=318,raw=&#91;object Object&#93;]\n-图片表情\n[CQ:image,summary=&#91;动画表情&#93;,file=769CCBE4042B0E956FC7F079322F2438.png,sub_type=1,url=https://multimedia.nt.qq.com.cn/download?appid=1407&amp;fileid=EhQa665uh0d_P-W6oGCehciHJWLDsBj0nAIg_wooruaRl--djwMyBHByb2RQgL2jAVoQB5jzqRNnwmJQvWhfaoMmnHoC854&amp;rkey=CAQSMLA2CijgY-sauNPu7597Ifqxim_rf--To5-0QvaNQc-bICyInMLpdJqXUc5s9wtU9A,file_size=36468][CQ:image,summary=&#91;动画表情&#93;,file=B6AD553016EFBCC39433936518A486D1.jpg,sub_type=1,url=https://multimedia.nt.qq.com.cn/download?appid=1407&amp;fileid=EhTzYt8dt136icLgKHkVF7ja8jCBWhi8tSMg_woopJ-Sl--djwMyBHByb2RQgL2jAVoQtsuHCxevFe2xovuXxgSrk3oCvmk&amp;rkey=CAQSMLA2CijgY-sauNPu7597Ifqxim_rf--To7zVCn0H6YZcMqKy3wgjmner7iiAYBXoZQ,file_size=580284]",
+            "font": 14,
+            "sub_type": "normal",
+            "message": [
+              {
+                "type": "text",
+                "data": {
+                  "text": "很多的表情：\n-emoji表情😍😘\n-小黄脸表情"
+                }
+              },
+              {
+                "type": "face",
+                "data": {
+                  "id": "6",
+                  "raw": {
+                    "faceIndex": 6,
+                    "faceText": null,
+                    "faceType": 1,
+                    "packId": null,
+                    "stickerId": null,
+                    "sourceType": null,
+                    "stickerType": null,
+                    "resultId": null,
+                    "surpriseId": null,
+                    "randomType": null,
+                    "imageType": null,
+                    "pokeType": null,
+                    "spokeSummary": null,
+                    "doubleHit": null,
+                    "vaspokeId": null,
+                    "vaspokeName": null,
+                    "vaspokeMinver": null,
+                    "pokeStrength": null,
+                    "msgType": null,
+                    "faceBubbleCount": null,
+                    "oldVersionStr": null,
+                    "pokeFlag": null,
+                    "chainCount": null
+                  },
+                  "resultId": null,
+                  "chainCount": null
+                }
+              },
+              {
+                "type": "face",
+                "data": {
+                  "id": "293",
+                  "raw": {
+                    "faceIndex": 293,
+                    "faceText": "[摸锦鲤]",
+                    "faceType": 2,
+                    "packId": null,
+                    "stickerId": null,
+                    "sourceType": null,
+                    "stickerType": null,
+                    "resultId": null,
+                    "surpriseId": null,
+                    "randomType": null,
+                    "imageType": null,
+                    "pokeType": null,
+                    "spokeSummary": null,
+                    "doubleHit": null,
+                    "vaspokeId": null,
+                    "vaspokeName": null,
+                    "vaspokeMinver": null,
+                    "pokeStrength": null,
+                    "msgType": null,
+                    "faceBubbleCount": null,
+                    "oldVersionStr": null,
+                    "pokeFlag": null,
+                    "chainCount": null
+                  },
+                  "resultId": null,
+                  "chainCount": null
+                }
+              },
+              {
+                "type": "text",
+                "data": {
+                  "text": "\n-超级表情"
+                }
+              },
+              {
+                "type": "face",
+                "data": {
+                  "id": "317",
+                  "raw": {
+                    "faceIndex": 317,
+                    "faceText": "[菜汪]",
+                    "faceType": 2,
+                    "packId": null,
+                    "stickerId": null,
+                    "sourceType": null,
+                    "stickerType": null,
+                    "resultId": null,
+                    "surpriseId": null,
+                    "randomType": null,
+                    "imageType": null,
+                    "pokeType": null,
+                    "spokeSummary": null,
+                    "doubleHit": null,
+                    "vaspokeId": null,
+                    "vaspokeName": null,
+                    "vaspokeMinver": null,
+                    "pokeStrength": null,
+                    "msgType": null,
+                    "faceBubbleCount": null,
+                    "oldVersionStr": null,
+                    "pokeFlag": null,
+                    "chainCount": null
+                  },
+                  "resultId": null,
+                  "chainCount": null
+                }
+              },
+              {
+                "type": "face",
+                "data": {
+                  "id": "318",
+                  "raw": {
+                    "faceIndex": 318,
+                    "faceText": "[崇拜]",
+                    "faceType": 2,
+                    "packId": null,
+                    "stickerId": null,
+                    "sourceType": null,
+                    "stickerType": null,
+                    "resultId": null,
+                    "surpriseId": null,
+                    "randomType": null,
+                    "imageType": null,
+                    "pokeType": null,
+                    "spokeSummary": null,
+                    "doubleHit": null,
+                    "vaspokeId": null,
+                    "vaspokeName": null,
+                    "vaspokeMinver": null,
+                    "pokeStrength": null,
+                    "msgType": null,
+                    "faceBubbleCount": null,
+                    "oldVersionStr": null,
+                    "pokeFlag": null,
+                    "chainCount": null
+                  },
+                  "resultId": null,
+                  "chainCount": null
+                }
+              },
+              {
+                "type": "text",
+                "data": {
+                  "text": "\n-图片表情\n"
+                }
+              },
+              {
+                "type": "image",
+                "data": {
+                  "summary": "[动画表情]",
+                  "file": "769CCBE4042B0E956FC7F079322F2438.png",
+                  "sub_type": 1,
+                  "url": "https://multimedia.nt.qq.com.cn/download?appid=1407&fileid=EhQa665uh0d_P-W6oGCehciHJWLDsBj0nAIg_wooruaRl--djwMyBHByb2RQgL2jAVoQB5jzqRNnwmJQvWhfaoMmnHoC854&rkey=CAQSMLA2CijgY-sauNPu7597Ifqxim_rf--To5-0QvaNQc-bICyInMLpdJqXUc5s9wtU9A",
+                  "file_size": "36468"
+                }
+              },
+              {
+                "type": "image",
+                "data": {
+                  "summary": "[动画表情]",
+                  "file": "B6AD553016EFBCC39433936518A486D1.jpg",
+                  "sub_type": 1,
+                  "url": "https://multimedia.nt.qq.com.cn/download?appid=1407&fileid=EhTzYt8dt136icLgKHkVF7ja8jCBWhi8tSMg_woopJ-Sl--djwMyBHByb2RQgL2jAVoQtsuHCxevFe2xovuXxgSrk3oCvmk&rkey=CAQSMLA2CijgY-sauNPu7597Ifqxim_rf--To7zVCn0H6YZcMqKy3wgjmner7iiAYBXoZQ",
+                  "file_size": "580284"
+                }
+              }
+            ],
+            "message_format": "array",
+            "post_type": "message",
+            "group_id": 8888888888
+          },
+          "webhookUrl": "http://REDACTED_N8N_HOST/webhook-test/REDACTED_NAPCAT_WEBHOOK_NAME",
+          "executionMode": "test"
+        }
+      },
+      {
+        "json": {
+          "headers": {
+            "content-type": "application/json",
+            "x-self-id": "222222",
+            "host": "REDACTED_N8N_HOST",
+            "connection": "keep-alive",
+            "transfer-encoding": "chunked"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "self_id": 222222,
+            "user_id": 111111,
+            "time": 1755847104,
+            "message_id": 535176081,
+            "message_seq": 535176081,
+            "real_id": 535176081,
+            "real_seq": "3785",
+            "message_type": "group",
+            "sender": {
+              "user_id": 111111,
+              "nickname": "REDACTED_NICKNAME_1",
+              "card": "REDACTED_NICKNAME_4",
+              "role": "owner"
+            },
+            "raw_message": "这[CQ:face,id=283,raw=&#91;object Object&#93;]条[CQ:face,id=266,raw=&#91;object Object&#93;]消息我[CQ:face,id=293,raw=&#91;object Object&#93;]撤回了[CQ:face,id=6,raw=&#91;object Object&#93;]",
+            "font": 14,
+            "sub_type": "normal",
+            "message": [
+              {
+                "type": "text",
+                "data": {
+                  "text": "这"
+                }
+              },
+              {
+                "type": "face",
+                "data": {
+                  "id": "283",
+                  "raw": {
+                    "faceIndex": 283,
+                    "faceText": "[狂笑]",
+                    "faceType": 2,
+                    "packId": null,
+                    "stickerId": null,
+                    "sourceType": null,
+                    "stickerType": null,
+                    "resultId": null,
+                    "surpriseId": null,
+                    "randomType": null,
+                    "imageType": null,
+                    "pokeType": null,
+                    "spokeSummary": null,
+                    "doubleHit": null,
+                    "vaspokeId": null,
+                    "vaspokeName": null,
+                    "vaspokeMinver": null,
+                    "pokeStrength": null,
+                    "msgType": null,
+                    "faceBubbleCount": null,
+                    "oldVersionStr": null,
+                    "pokeFlag": null,
+                    "chainCount": null
+                  },
+                  "resultId": null,
+                  "chainCount": null
+                }
+              },
+              {
+                "type": "text",
+                "data": {
+                  "text": "条"
+                }
+              },
+              {
+                "type": "face",
+                "data": {
+                  "id": "266",
+                  "raw": {
+                    "faceIndex": 266,
+                    "faceText": "[哦哟]",
+                    "faceType": 2,
+                    "packId": null,
+                    "stickerId": null,
+                    "sourceType": null,
+                    "stickerType": null,
+                    "resultId": null,
+                    "surpriseId": null,
+                    "randomType": null,
+                    "imageType": null,
+                    "pokeType": null,
+                    "spokeSummary": null,
+                    "doubleHit": null,
+                    "vaspokeId": null,
+                    "vaspokeName": null,
+                    "vaspokeMinver": null,
+                    "pokeStrength": null,
+                    "msgType": null,
+                    "faceBubbleCount": null,
+                    "oldVersionStr": null,
+                    "pokeFlag": null,
+                    "chainCount": null
+                  },
+                  "resultId": null,
+                  "chainCount": null
+                }
+              },
+              {
+                "type": "text",
+                "data": {
+                  "text": "消息我"
+                }
+              },
+              {
+                "type": "face",
+                "data": {
+                  "id": "293",
+                  "raw": {
+                    "faceIndex": 293,
+                    "faceText": "[摸锦鲤]",
+                    "faceType": 2,
+                    "packId": null,
+                    "stickerId": null,
+                    "sourceType": null,
+                    "stickerType": null,
+                    "resultId": null,
+                    "surpriseId": null,
+                    "randomType": null,
+                    "imageType": null,
+                    "pokeType": null,
+                    "spokeSummary": null,
+                    "doubleHit": null,
+                    "vaspokeId": null,
+                    "vaspokeName": null,
+                    "vaspokeMinver": null,
+                    "pokeStrength": null,
+                    "msgType": null,
+                    "faceBubbleCount": null,
+                    "oldVersionStr": null,
+                    "pokeFlag": null,
+                    "chainCount": null
+                  },
+                  "resultId": null,
+                  "chainCount": null
+                }
+              },
+              {
+                "type": "text",
+                "data": {
+                  "text": "撤回了"
+                }
+              },
+              {
+                "type": "face",
+                "data": {
+                  "id": "6",
+                  "raw": {
+                    "faceIndex": 6,
+                    "faceText": null,
+                    "faceType": 1,
+                    "packId": null,
+                    "stickerId": null,
+                    "sourceType": null,
+                    "stickerType": null,
+                    "resultId": null,
+                    "surpriseId": null,
+                    "randomType": null,
+                    "imageType": null,
+                    "pokeType": null,
+                    "spokeSummary": null,
+                    "doubleHit": null,
+                    "vaspokeId": null,
+                    "vaspokeName": null,
+                    "vaspokeMinver": null,
+                    "pokeStrength": null,
+                    "msgType": null,
+                    "faceBubbleCount": null,
+                    "oldVersionStr": null,
+                    "pokeFlag": null,
+                    "chainCount": null
+                  },
+                  "resultId": null,
+                  "chainCount": null
+                }
+              }
+            ],
+            "message_format": "array",
+            "post_type": "message",
+            "group_id": 8888888888
+          },
+          "webhookUrl": "http://REDACTED_N8N_HOST/webhook-test/REDACTED_NAPCAT_WEBHOOK_NAME",
+          "executionMode": "test"
+        }
+      },
+      {
+        "json": {
+          "headers": {
+            "content-type": "application/json",
+            "x-self-id": "222222",
+            "host": "REDACTED_N8N_HOST",
+            "connection": "keep-alive",
+            "transfer-encoding": "chunked"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "self_id": 222222,
+            "user_id": 222222,
+            "time": 1755847248,
+            "message_id": 1417250533,
+            "message_seq": 1417250533,
+            "real_id": 1417250533,
+            "real_seq": "3786",
+            "message_type": "group",
+            "sender": {
+              "user_id": 222222,
+              "nickname": "REDACTED_NICKNAME_3",
+              "card": "",
+              "role": "admin"
+            },
+            "raw_message": "[CQ:image,file=BE79F10917B7FBABFC67580F33E1D6BE.png,sub_type=0,url=https://multimedia.nt.qq.com.cn/download?appid=1407&amp;fileid=EhTYFenAnJltOM77atEXHFwl6PyCcBjC5QUg_woo3e7q2_CdjwMyBHByb2RQgL2jAVoQUaRBc4BNqr034N_bD4aplHoCLEA&amp;rkey=CAQSMLA2CijgY-sauNPu7597Ifqxim_rf--To7zVCn0H6YZcMqKy3wgjmner7iiAYBXoZQ,file_size=94914]",
+            "font": 14,
+            "sub_type": "normal",
+            "message": [
+              {
+                "type": "image",
+                "data": {
+                  "summary": "",
+                  "file": "BE79F10917B7FBABFC67580F33E1D6BE.png",
+                  "sub_type": 0,
+                  "url": "https://multimedia.nt.qq.com.cn/download?appid=1407&fileid=EhTYFenAnJltOM77atEXHFwl6PyCcBjC5QUg_woo3e7q2_CdjwMyBHByb2RQgL2jAVoQUaRBc4BNqr034N_bD4aplHoCLEA&rkey=CAQSMLA2CijgY-sauNPu7597Ifqxim_rf--To7zVCn0H6YZcMqKy3wgjmner7iiAYBXoZQ",
+                  "file_size": "94914"
+                }
+              }
+            ],
+            "message_format": "array",
+            "post_type": "message_sent",
+            "message_sent_type": "self",
+            "group_id": 8888888888,
+            "target_id": 8888888888
+          },
+          "webhookUrl": "http://REDACTED_N8N_HOST/webhook-test/REDACTED_NAPCAT_WEBHOOK_NAME",
+          "executionMode": "test"
+        }
+      },
+      {
+        "json": {
+          "headers": {
+            "content-type": "application/json",
+            "x-self-id": "222222",
+            "host": "REDACTED_N8N_HOST",
+            "connection": "keep-alive",
+            "transfer-encoding": "chunked"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "time": 1755847298,
+            "self_id": 222222,
+            "post_type": "notice",
+            "notice_type": "notify",
+            "sub_type": "poke",
+            "target_id": 111111,
+            "user_id": 222222,
+            "group_id": 8888888888,
+            "raw_info": [
+              {
+                "col": "1",
+                "nm": "",
+                "type": "qq",
+                "uid": "u_vgTKbfbIT2A41OBXjAHtqA"
+              },
+              {
+                "jp": "https://zb.vip.qq.com/v2/pages/nudgeMall?_wv=2&actionId=7",
+                "src": "http://tianquan.gtimg.cn/nudgeaction/item/7/expression.jpg",
+                "type": "img"
+              },
+              {
+                "txt": "喷了喷",
+                "type": "nor"
+              },
+              {
+                "col": "1",
+                "nm": "",
+                "tp": "0",
+                "type": "qq",
+                "uid": "u_4RM_txA55Xq6j9_OwZXr6w"
+              },
+              {
+                "txt": "",
+                "type": "nor"
+              }
+            ]
+          },
+          "webhookUrl": "http://REDACTED_N8N_HOST/webhook-test/REDACTED_NAPCAT_WEBHOOK_NAME",
+          "executionMode": "test"
+        }
+      },
+      {
+        "json": {
+          "headers": {
+            "content-type": "application/json",
+            "x-self-id": "222222",
+            "host": "REDACTED_N8N_HOST",
+            "connection": "keep-alive",
+            "transfer-encoding": "chunked"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "self_id": 222222,
+            "user_id": 222222,
+            "time": 1755847361,
+            "message_id": 1338156968,
+            "message_seq": 1338156968,
+            "real_id": 1338156968,
+            "real_seq": "3787",
+            "message_type": "group",
+            "sender": {
+              "user_id": 222222,
+              "nickname": "REDACTED_NICKNAME_3",
+              "card": "",
+              "role": "admin"
+            },
+            "raw_message": "[CQ:reply,id=535176081][CQ:at,qq=111111] 好啊",
+            "font": 14,
+            "sub_type": "normal",
+            "message": [
+              {
+                "type": "reply",
+                "data": {
+                  "id": "535176081"
+                }
+              },
+              {
+                "type": "at",
+                "data": {
+                  "qq": "111111"
+                }
+              },
+              {
+                "type": "text",
+                "data": {
+                  "text": " "
+                }
+              },
+              {
+                "type": "text",
+                "data": {
+                  "text": "好啊"
+                }
+              }
+            ],
+            "message_format": "array",
+            "post_type": "message_sent",
+            "message_sent_type": "self",
+            "group_id": 8888888888,
+            "target_id": 8888888888
+          },
+          "webhookUrl": "http://REDACTED_N8N_HOST/webhook-test/REDACTED_NAPCAT_WEBHOOK_NAME",
+          "executionMode": "test"
+        }
+      },
+      {
+        "json": {
+          "headers": {
+            "content-type": "application/json",
+            "x-self-id": "222222",
+            "host": "REDACTED_N8N_HOST",
+            "connection": "keep-alive",
+            "transfer-encoding": "chunked"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "self_id": 222222,
+            "user_id": 111111,
+            "time": 1755847449,
+            "message_id": 1750148131,
+            "message_seq": 1750148131,
+            "real_id": 1750148131,
+            "real_seq": "3788",
+            "message_type": "group",
+            "sender": {
+              "user_id": 111111,
+              "nickname": "REDACTED_NICKNAME_1",
+              "card": "REDACTED_NICKNAME_4",
+              "role": "owner"
+            },
+            "raw_message": "REDACTED_NICKNAME_7你在干啥[CQ:at,qq=222222] 所有人安静安静[CQ:at,qq=all]",
+            "font": 14,
+            "sub_type": "normal",
+            "message": [
+              {
+                "type": "text",
+                "data": {
+                  "text": "REDACTED_NICKNAME_7你在干啥"
+                }
+              },
+              {
+                "type": "at",
+                "data": {
+                  "qq": "222222"
+                }
+              },
+              {
+                "type": "text",
+                "data": {
+                  "text": " 所有人安静安静"
+                }
+              },
+              {
+                "type": "at",
+                "data": {
+                  "qq": "all"
+                }
+              },
+              {
+                "type": "text",
+                "data": {
+                  "text": " "
+                }
+              }
+            ],
+            "message_format": "array",
+            "post_type": "message",
+            "group_id": 8888888888
+          },
+          "webhookUrl": "http://REDACTED_N8N_HOST/webhook-test/REDACTED_NAPCAT_WEBHOOK_NAME",
+          "executionMode": "test"
+        }
+      },
+      {
+        "json": {
+          "headers": {
+            "content-type": "application/json",
+            "x-self-id": "222222",
+            "host": "REDACTED_N8N_HOST",
+            "connection": "keep-alive",
+            "transfer-encoding": "chunked"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "time": 1755847556,
+            "self_id": 222222,
+            "post_type": "notice",
+            "group_id": 8888888888,
+            "user_id": 111111,
+            "notice_type": "group_recall",
+            "operator_id": 111111,
+            "message_id": 535176081
+          },
+          "webhookUrl": "http://REDACTED_N8N_HOST/webhook-test/REDACTED_NAPCAT_WEBHOOK_NAME",
+          "executionMode": "test"
+        }
+      },
+      {
+        "json": {
+          "headers": {
+            "content-type": "application/json",
+            "x-self-id": "222222",
+            "host": "REDACTED_N8N_HOST",
+            "connection": "keep-alive",
+            "transfer-encoding": "chunked"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "self_id": 222222,
+            "user_id": 222222,
+            "time": 1755847766,
+            "message_id": 1202787036,
+            "message_seq": 1202787036,
+            "real_id": 1202787036,
+            "real_seq": "3789",
+            "message_type": "group",
+            "sender": {
+              "user_id": 222222,
+              "nickname": "REDACTED_NICKNAME_3",
+              "card": "",
+              "role": "admin"
+            },
+            "raw_message": "[CQ:forward,id=7541308731995266845]",
+            "font": 14,
+            "sub_type": "normal",
+            "message": [
+              {
+                "type": "forward",
+                "data": {
+                  "id": "7541308731995266845"
+                }
+              }
+            ],
+            "message_format": "array",
+            "post_type": "message_sent",
+            "message_sent_type": "self",
+            "group_id": 8888888888,
+            "target_id": 8888888888
+          },
+          "webhookUrl": "http://REDACTED_N8N_HOST/webhook-test/REDACTED_NAPCAT_WEBHOOK_NAME",
+          "executionMode": "test"
+        }
+      },
+      {
+        "json": {
+          "headers": {
+            "content-type": "application/json",
+            "x-self-id": "222222",
+            "host": "REDACTED_N8N_HOST",
+            "connection": "keep-alive",
+            "transfer-encoding": "chunked"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "self_id": 222222,
+            "user_id": 222222,
+            "time": 1755848493,
+            "message_id": 1341917659,
+            "message_seq": 1341917659,
+            "real_id": 1341917659,
+            "real_seq": "3790",
+            "message_type": "group",
+            "sender": {
+              "user_id": 222222,
+              "nickname": "REDACTED_NICKNAME_3",
+              "card": "",
+              "role": "admin"
+            },
+            "raw_message": "[CQ:json,data={\"app\":\"com.tencent.tuwen.lua\"&#44;\"bizsrc\":\"qqconnect.sdkshare\"&#44;\"config\":{\"ctime\":1755848492&#44;\"forward\":1&#44;\"token\":\"abf23e006ee7e73701df61216e8986e7\"&#44;\"type\":\"normal\"}&#44;\"extra\":{\"app_type\":1&#44;\"appid\":1103188687&#44;\"uin\":222222}&#44;\"meta\":{\"news\":{\"app_type\":1&#44;\"appid\":1103188687&#44;\"ctime\":1755848492&#44;\"desc\":\"12306回应称，高铁动车这类列车，出于安全考虑，目前不可能加挂“吸烟列车”。\"&#44;\"jumpUrl\":\"https://mp.weixin.qq.com/s?__biz=MzI2NDk5NzA0Mw==&amp;mid=2248854508&amp;idx=1&amp;sn=66142f44048f17579786e95dffbaad78&amp;chksm=e839f3a40cdb7086b2b163fe8174cf770e08d00d618e4e9c5858976371a6d92e4e48d43c8ade&amp;mpshare=1&amp;scene=23&amp;srcid=0822tA0Sli9Kgbn5PWYZdv2N&amp;sharer_shareinfo=43550ba1d066aaf8693c960b9a760bf7&amp;sharer_shareinfo_first=43550ba1d066aaf8693c960b9a760bf7#rd\"&#44;\"preview\":\"https://mmbiz.qpic.cn/mmbiz_jpg/QicyPhNHD5vY0A0KS9vJ9baFXxTw6eJhpw2UZE5S5cibTV4pQgbQURVmnQpmCuWUUX0IqtCufRsB7iaVTy5VoPfYA/300?wx_fmt=jpeg&amp;wxfrom=7\"&#44;\"tag\":\"微信\"&#44;\"tagIcon\":\"https://p.qpic.cn/qqconnect/0/app_1103188687_1658800746/100?max-age=2592000&amp;t=0\"&#44;\"title\":\"8点1氪：12306回应高铁能否加挂吸烟车厢；官方通报50升…\"&#44;\"uin\":222222}}&#44;\"prompt\":\"&#91;分享&#93;8点1氪：12306回应高铁能否加挂吸烟车厢；官方通报50升…\"&#44;\"ver\":\"0.0.0.1\"&#44;\"view\":\"news\"}]",
+            "font": 14,
+            "sub_type": "normal",
+            "message": [
+              {
+                "type": "json",
+                "data": {
+                  "data": "{\"app\":\"com.tencent.tuwen.lua\",\"bizsrc\":\"qqconnect.sdkshare\",\"config\":{\"ctime\":1755848492,\"forward\":1,\"token\":\"abf23e006ee7e73701df61216e8986e7\",\"type\":\"normal\"},\"extra\":{\"app_type\":1,\"appid\":1103188687,\"uin\":222222},\"meta\":{\"news\":{\"app_type\":1,\"appid\":1103188687,\"ctime\":1755848492,\"desc\":\"12306回应称，高铁动车这类列车，出于安全考虑，目前不可能加挂“吸烟列车”。\",\"jumpUrl\":\"https://mp.weixin.qq.com/s?__biz=MzI2NDk5NzA0Mw==&mid=2248854508&idx=1&sn=66142f44048f17579786e95dffbaad78&chksm=e839f3a40cdb7086b2b163fe8174cf770e08d00d618e4e9c5858976371a6d92e4e48d43c8ade&mpshare=1&scene=23&srcid=0822tA0Sli9Kgbn5PWYZdv2N&sharer_shareinfo=43550ba1d066aaf8693c960b9a760bf7&sharer_shareinfo_first=43550ba1d066aaf8693c960b9a760bf7#rd\",\"preview\":\"https://mmbiz.qpic.cn/mmbiz_jpg/QicyPhNHD5vY0A0KS9vJ9baFXxTw6eJhpw2UZE5S5cibTV4pQgbQURVmnQpmCuWUUX0IqtCufRsB7iaVTy5VoPfYA/300?wx_fmt=jpeg&wxfrom=7\",\"tag\":\"微信\",\"tagIcon\":\"https://p.qpic.cn/qqconnect/0/app_1103188687_1658800746/100?max-age=2592000&t=0\",\"title\":\"8点1氪：12306回应高铁能否加挂吸烟车厢；官方通报50升…\",\"uin\":222222}},\"prompt\":\"[分享]8点1氪：12306回应高铁能否加挂吸烟车厢；官方通报50升…\",\"ver\":\"0.0.0.1\",\"view\":\"news\"}"
+                }
+              }
+            ],
+            "message_format": "array",
+            "post_type": "message_sent",
+            "message_sent_type": "self",
+            "group_id": 8888888888,
+            "target_id": 8888888888
+          },
+          "webhookUrl": "http://REDACTED_N8N_HOST/webhook-test/REDACTED_NAPCAT_WEBHOOK_NAME",
+          "executionMode": "test"
+        }
+      },
+      {
+        "json": {
+          "headers": {
+            "content-type": "application/json",
+            "x-self-id": "222222",
+            "host": "REDACTED_N8N_HOST",
+            "connection": "keep-alive",
+            "transfer-encoding": "chunked"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "time": 1755849626,
+            "self_id": 222222,
+            "post_type": "notice",
+            "notice_type": "notify",
+            "sub_type": "poke",
+            "target_id": 222222,
+            "user_id": 222222,
+            "group_id": 8888888888,
+            "raw_info": [
+              {
+                "col": "1",
+                "nm": "",
+                "type": "qq",
+                "uid": "u_vgTKbfbIT2A41OBXjAHtqA"
+              },
+              {
+                "jp": "https://zb.vip.qq.com/v2/pages/nudgeMall?_wv=2&actionId=0",
+                "src": "http://tianquan.gtimg.cn/nudgeaction/item/0/expression.jpg",
+                "type": "img"
+              },
+              {
+                "txt": "戳了戳",
+                "type": "nor"
+              },
+              {
+                "col": "1",
+                "nm": "",
+                "tp": "1",
+                "type": "qq",
+                "uid": "u_vgTKbfbIT2A41OBXjAHtqA"
+              },
+              {
+                "txt": "的钱包发现什么也没有",
+                "type": "nor"
+              }
+            ]
+          },
+          "webhookUrl": "http://REDACTED_N8N_HOST/webhook-test/REDACTED_NAPCAT_WEBHOOK_NAME",
+          "executionMode": "test"
+        }
+      },
+      {
+        "json": {
+          "headers": {
+            "content-type": "application/json",
+            "x-self-id": "222222",
+            "host": "REDACTED_N8N_HOST",
+            "connection": "keep-alive",
+            "transfer-encoding": "chunked"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "self_id": 222222,
+            "user_id": 222222,
+            "time": 1755849740,
+            "message_id": 1539411858,
+            "message_seq": 1539411858,
+            "real_id": 1539411858,
+            "real_seq": "3791",
+            "message_type": "group",
+            "sender": {
+              "user_id": 222222,
+              "nickname": "REDACTED_NICKNAME_3",
+              "card": "",
+              "role": "admin"
+            },
+            "raw_message": "[CQ:json,data={\"app\":\"com.tencent.tuwen.lua\"&#44;\"bizsrc\":\"qqconnect.sdkshare\"&#44;\"config\":{\"ctime\":1755849739&#44;\"forward\":1&#44;\"token\":\"f4a8b1110b9c924f4dcaf4f7e11f1a47\"&#44;\"type\":\"normal\"}&#44;\"extra\":{\"app_type\":1&#44;\"appid\":100507190&#44;\"uin\":222222}&#44;\"meta\":{\"news\":{\"app_type\":1&#44;\"appid\":100507190&#44;\"ctime\":1755849739&#44;\"desc\":\"机械翻转磁力屏，其工作原理是利用磁场对磁性物体的作用来实现像素的翻转显示。 磁力…\"&#44;\"jumpUrl\":\"https://www.xiaohongshu.com/discovery/item/689dbf65000000001c0078df?app_platform=ios&amp;app_version=8.97&amp;share_from_user_hidden=true&amp;xsec_source=app_share&amp;type=video&amp;xsec_token=CBL_O0H6hlNz7byF0IW5IcHTnQ2fAMekJOp-6pJo6ksR0=&amp;author_share=1&amp;xhsshare=QQ&amp;shareRedId=ODY7QUg6NEA2NzUyOTgwNjY0OThHSjw7&amp;apptime=1755849737&amp;share_id=f3eadbecd4e443cd8875f3318f2b2025\"&#44;\"preview\":\"https://pic.ugcimg.cn/f1566184702b020c1744ac15747af06c/jpg1\"&#44;\"tag\":\"小红书\"&#44;\"tagIcon\":\"https://open.gtimg.cn/open/app_icon/00/50/71/90/100507190_100_m.png?t=1755575996\"&#44;\"title\":\"什么是磁力屏\"&#44;\"uin\":222222}}&#44;\"prompt\":\"&#91;分享&#93;什么是磁力屏\"&#44;\"ver\":\"0.0.0.1\"&#44;\"view\":\"news\"}]",
+            "font": 14,
+            "sub_type": "normal",
+            "message": [
+              {
+                "type": "json",
+                "data": {
+                  "data": "{\"app\":\"com.tencent.tuwen.lua\",\"bizsrc\":\"qqconnect.sdkshare\",\"config\":{\"ctime\":1755849739,\"forward\":1,\"token\":\"f4a8b1110b9c924f4dcaf4f7e11f1a47\",\"type\":\"normal\"},\"extra\":{\"app_type\":1,\"appid\":100507190,\"uin\":222222},\"meta\":{\"news\":{\"app_type\":1,\"appid\":100507190,\"ctime\":1755849739,\"desc\":\"机械翻转磁力屏，其工作原理是利用磁场对磁性物体的作用来实现像素的翻转显示。 磁力…\",\"jumpUrl\":\"https://www.xiaohongshu.com/discovery/item/689dbf65000000001c0078df?app_platform=ios&app_version=8.97&share_from_user_hidden=true&xsec_source=app_share&type=video&xsec_token=CBL_O0H6hlNz7byF0IW5IcHTnQ2fAMekJOp-6pJo6ksR0=&author_share=1&xhsshare=QQ&shareRedId=ODY7QUg6NEA2NzUyOTgwNjY0OThHSjw7&apptime=1755849737&share_id=f3eadbecd4e443cd8875f3318f2b2025\",\"preview\":\"https://pic.ugcimg.cn/f1566184702b020c1744ac15747af06c/jpg1\",\"tag\":\"小红书\",\"tagIcon\":\"https://open.gtimg.cn/open/app_icon/00/50/71/90/100507190_100_m.png?t=1755575996\",\"title\":\"什么是磁力屏\",\"uin\":222222}},\"prompt\":\"[分享]什么是磁力屏\",\"ver\":\"0.0.0.1\",\"view\":\"news\"}"
+                }
+              }
+            ],
+            "message_format": "array",
+            "post_type": "message_sent",
+            "message_sent_type": "self",
+            "group_id": 8888888888,
+            "target_id": 8888888888
+          },
+          "webhookUrl": "http://REDACTED_N8N_HOST/webhook-test/REDACTED_NAPCAT_WEBHOOK_NAME",
+          "executionMode": "test"
+        }
+      },
+      {
+        "json": {
+          "headers": {
+            "content-type": "application/json",
+            "x-self-id": "222222",
+            "host": "REDACTED_N8N_HOST",
+            "connection": "keep-alive",
+            "transfer-encoding": "chunked"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "self_id": 222222,
+            "user_id": 111111,
+            "time": 1755849823,
+            "message_id": 1847269358,
+            "message_seq": 1847269358,
+            "real_id": 1847269358,
+            "real_seq": "3792",
+            "message_type": "group",
+            "sender": {
+              "user_id": 111111,
+              "nickname": "REDACTED_NICKNAME_1",
+              "card": "REDACTED_NICKNAME_4",
+              "role": "owner"
+            },
+            "raw_message": "[CQ:reply,id=1539411858]这个有意思 [CQ:at,qq=222222]",
+            "font": 14,
+            "sub_type": "normal",
+            "message": [
+              {
+                "type": "reply",
+                "data": {
+                  "id": "1539411858"
+                }
+              },
+              {
+                "type": "text",
+                "data": {
+                  "text": "这个有意思 "
+                }
+              },
+              {
+                "type": "at",
+                "data": {
+                  "qq": "222222"
+                }
+              },
+              {
+                "type": "text",
+                "data": {
+                  "text": " "
+                }
+              }
+            ],
+            "message_format": "array",
+            "post_type": "message",
+            "group_id": 8888888888
+          },
+          "webhookUrl": "http://REDACTED_N8N_HOST/webhook-test/REDACTED_NAPCAT_WEBHOOK_NAME",
+          "executionMode": "test"
+        }
+      },
+      {
+        "json": {
+          "headers": {
+            "content-type": "application/json",
+            "x-self-id": "222222",
+            "host": "REDACTED_N8N_HOST",
+            "connection": "keep-alive",
+            "transfer-encoding": "chunked"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "self_id": 222222,
+            "user_id": 222222,
+            "time": 1755849879,
+            "message_id": 1332830627,
+            "message_seq": 1332830627,
+            "real_id": 1332830627,
+            "real_seq": "3793",
+            "message_type": "group",
+            "sender": {
+              "user_id": 222222,
+              "nickname": "REDACTED_NICKNAME_3",
+              "card": "",
+              "role": "admin"
+            },
+            "raw_message": "[CQ:face,id=317,raw=&#91;object Object&#93;,chainCount=0]",
+            "font": 14,
+            "sub_type": "normal",
+            "message": [
+              {
+                "type": "face",
+                "data": {
+                  "id": "317",
+                  "raw": {
+                    "faceIndex": 317,
+                    "faceText": "/菜汪",
+                    "faceType": 3,
+                    "packId": "1",
+                    "stickerId": "7",
+                    "sourceType": 1,
+                    "stickerType": 1,
+                    "resultId": "",
+                    "surpriseId": "",
+                    "randomType": 0,
+                    "imageType": null,
+                    "pokeType": null,
+                    "spokeSummary": null,
+                    "doubleHit": null,
+                    "vaspokeId": null,
+                    "vaspokeName": null,
+                    "vaspokeMinver": null,
+                    "pokeStrength": null,
+                    "msgType": null,
+                    "faceBubbleCount": null,
+                    "oldVersionStr": null,
+                    "pokeFlag": null,
+                    "chainCount": 0
+                  },
+                  "resultId": "",
+                  "chainCount": 0
+                }
+              }
+            ],
+            "message_format": "array",
+            "post_type": "message_sent",
+            "message_sent_type": "self",
+            "group_id": 8888888888,
+            "target_id": 8888888888
+          },
+          "webhookUrl": "http://REDACTED_N8N_HOST/webhook-test/REDACTED_NAPCAT_WEBHOOK_NAME",
+          "executionMode": "test"
+        }
+      },
+      {
+        "json": {
+          "headers": {
+            "content-type": "application/json",
+            "x-self-id": "222222",
+            "host": "REDACTED_N8N_HOST",
+            "connection": "keep-alive",
+            "transfer-encoding": "chunked"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "self_id": 222222,
+            "user_id": 222222,
+            "time": 1755850144,
+            "message_id": 2095725925,
+            "message_seq": 2095725925,
+            "real_id": 2095725925,
+            "real_seq": "3796",
+            "message_type": "group",
+            "sender": {
+              "user_id": 222222,
+              "nickname": "REDACTED_NICKNAME_3",
+              "card": "",
+              "role": "admin"
+            },
+            "raw_message": "[CQ:reply,id=1750148131]@REDACTED_NICKNAME_4 没干啥啊",
+            "font": 14,
+            "sub_type": "normal",
+            "message": [
+              {
+                "type": "reply",
+                "data": {
+                  "id": "1750148131"
+                }
+              },
+              {
+                "type": "text",
+                "data": {
+                  "text": "@REDACTED_NICKNAME_4 没干啥啊"
+                }
+              }
+            ],
+            "message_format": "array",
+            "post_type": "message_sent",
+            "message_sent_type": "self",
+            "group_id": 8888888888,
+            "target_id": 8888888888
+          },
+          "webhookUrl": "http://REDACTED_N8N_HOST/webhook-test/REDACTED_NAPCAT_WEBHOOK_NAME",
+          "executionMode": "test"
+        }
+      },
+      {
+        "json": {
+          "headers": {
+            "content-type": "application/json",
+            "x-self-id": "222222",
+            "host": "REDACTED_N8N_HOST",
+            "connection": "keep-alive",
+            "transfer-encoding": "chunked"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "time": 1755850180,
+            "self_id": 222222,
+            "post_type": "notice",
+            "group_id": 8888888888,
+            "user_id": 111111,
+            "notice_type": "group_recall",
+            "operator_id": 111111,
+            "message_id": 1332830627
+          },
+          "webhookUrl": "http://REDACTED_N8N_HOST/webhook-test/REDACTED_NAPCAT_WEBHOOK_NAME",
+          "executionMode": "test"
+        }
+      },
+      {
+        "json": {
+          "headers": {
+            "content-type": "application/json",
+            "x-self-id": "222222",
+            "host": "REDACTED_N8N_HOST",
+            "connection": "keep-alive",
+            "transfer-encoding": "chunked"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "self_id": 222222,
+            "user_id": 111111,
+            "time": 1755850608,
+            "message_id": 2061092034,
+            "message_seq": 2061092034,
+            "real_id": 2061092034,
+            "real_seq": "3797",
+            "message_type": "group",
+            "sender": {
+              "user_id": 111111,
+              "nickname": "REDACTED_NICKNAME_1",
+              "card": "REDACTED_NICKNAME_4",
+              "role": "owner"
+            },
+            "raw_message": "[CQ:forward,id=7541320939816319189]",
+            "font": 14,
+            "sub_type": "normal",
+            "message": [
+              {
+                "type": "forward",
+                "data": {
+                  "id": "7541320939816319189"
+                }
+              }
+            ],
+            "message_format": "array",
+            "post_type": "message",
+            "group_id": 8888888888
+          },
+          "webhookUrl": "http://REDACTED_N8N_HOST/webhook-test/REDACTED_NAPCAT_WEBHOOK_NAME",
+          "executionMode": "test"
+        }
+      }
+    ],
+    "MockData1": [
+      {
+        "json": {
+          "headers": {
+            "content-type": "application/json",
+            "x-self-id": "222222",
+            "host": "REDACTED_N8N_HOST",
+            "connection": "keep-alive",
+            "transfer-encoding": "chunked"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "self_id": 222222,
+            "user_id": 111111,
+            "time": 1756365563,
+            "message_id": 1027638203,
+            "message_seq": 1027638203,
+            "real_id": 1027638203,
+            "real_seq": "3845",
+            "message_type": "group",
+            "sender": {
+              "user_id": 111111,
+              "nickname": "REDACTED_NICKNAME_1",
+              "card": "REDACTED_NICKNAME_3",
+              "role": "owner"
+            },
+            "raw_message": "[CQ:reply,id=1916273604]离谱",
+            "font": 14,
+            "sub_type": "normal",
+            "message": [
+              {
+                "type": "reply",
+                "data": {
+                  "id": "1916273604"
+                }
+              },
+              {
+                "type": "text",
+                "data": {
+                  "text": "离谱"
+                }
+              }
+            ],
+            "message_format": "array",
+            "post_type": "message",
+            "group_id": 8888888888
+          },
+          "webhookUrl": "http://REDACTED_N8N_HOST/webhook/REDACTED_NAPCAT_WEBHOOK_NAME",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "versionId": "f99f0476-89f0-4726-89f6-3beb148d38c8",
+  "tags": [
+    {
+      "updatedAt": "2025-09-02T03:07:39.232Z",
+      "createdAt": "2025-09-02T03:07:39.232Z",
+      "id": "QPm6Jx9oO3RUCGLx",
+      "name": "ChatBot"
+    }
+  ]
+}

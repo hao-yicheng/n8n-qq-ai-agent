@@ -1,0 +1,208 @@
+{
+  "id": "02IgSSJJTskfOrH1",
+  "name": "QQBot - Service - StatusMonitor",
+  "description": null,
+  "active": true,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -256,
+        32
+      ],
+      "id": "b83772eb-083d-48d9-aadf-3aa4f6deda7e",
+      "name": "HourlyTrigger"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://REDACTED_NAPCAT_HOST/get_status",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpBearerAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -112,
+        32
+      ],
+      "id": "407b72cc-7129-43a1-bb28-2e7b709d2a79",
+      "name": "FetchLoginStatus",
+      "executeOnce": false,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "H4DZKWVXFuZ7yaVN",
+          "name": "Header Auth account"
+        },
+        "httpBasicAuth": {
+          "id": "b9ceX0ZUHEzVZKis",
+          "name": "Unnamed credential"
+        },
+        "oneBotApi": {
+          "id": "psDnv6iXxsYQpTiW",
+          "name": "OneBot account"
+        },
+        "httpBearerAuth": {
+          "id": "8VNzGvlwHZa1SKmt",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.status != 'ok' || $json.data.online != true || $json.data.good != true }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    },
+                    "id": "68f7da9c-62af-4b7d-8053-0a96f2ea135c"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Offline"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        32,
+        32
+      ],
+      "id": "af351eff-065a-4b9d-b4b0-505321b5b79e",
+      "name": "CheckIsOffline"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.day.app/REDACTED_BARK_TOKEN",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"body\": {{ JSON.stringify(\"Status: \" + $json.status + \" | online:\" + $json.data.online + \" | good:\" + $json.data.good + \"\\nstat:\" + $json.data.stat + \"\\nmessage:\" + $json.message + \"\\nwording:\" + $json.wording + \"\\necho:\" + $json.echo) }},\n  \"title\": \"QQ Offline\",\n  \"badge\": 1,\n  \"sound\": \"minuet\",\n  \"icon\": \"https://img.freepik.com/premium-vector/window-operating-system-error-warning-dialog-window-popup-message-with-system-failure-flat-design_812892-54.jpg\",\n  \"group\": \"QQ\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        -48
+      ],
+      "id": "0c5cf60b-0bcd-41e2-b2c3-8dcdeb2bcc72",
+      "name": "BarkNotify"
+    },
+    {
+      "parameters": {
+        "errorMessage": "=QQ Offline:\nStatus: {{ $json.status }} | online:{{ $json.data.online }} | good:{{ $json.data.good }}\\nstat:{{ $json.data.stat }}\\nmessage:{{ $json.message }}\\nwording:{{ $json.wording }}\\necho:{{ $json.echo }}"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        240,
+        96
+      ],
+      "id": "c4818594-8942-462a-878c-3352c62115a7",
+      "name": "StopFlow"
+    }
+  ],
+  "connections": {
+    "HourlyTrigger": {
+      "main": [
+        [
+          {
+            "node": "FetchLoginStatus",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FetchLoginStatus": {
+      "main": [
+        [
+          {
+            "node": "CheckIsOffline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CheckIsOffline": {
+      "main": [
+        [
+          {
+            "node": "BarkNotify",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "StopFlow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": null,
+  "pinData": {
+    "HourlyTrigger": [
+      {
+        "json": {
+          "timestamp": "2025-10-05T16:00:09.027+08:00",
+          "Readable date": "October 5th 2025, 4:00:09 pm",
+          "Readable time": "4:00:09 pm",
+          "Day of week": "Sunday",
+          "Year": "2025",
+          "Month": "October",
+          "Day of month": "05",
+          "Hour": "16",
+          "Minute": "00",
+          "Second": "09",
+          "Timezone": "Asia/Shanghai (UTC+08:00)"
+        }
+      }
+    ]
+  },
+  "versionId": "d7faf2a7-621f-42c2-8096-454836573723",
+  "tags": [
+    {
+      "updatedAt": "2025-09-02T03:07:39.232Z",
+      "createdAt": "2025-09-02T03:07:39.232Z",
+      "id": "QPm6Jx9oO3RUCGLx",
+      "name": "ChatBot"
+    }
+  ]
+}

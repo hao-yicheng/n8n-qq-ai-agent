@@ -1,0 +1,2088 @@
+{
+  "id": "FdYx2EgolX2N1P6V",
+  "name": "QQBot - Sub - MediaAnalysis",
+  "description": null,
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "015dc6e6-db59-4b40-82d2-a8cfbcc7ec35",
+              "name": "file_name",
+              "value": "={{ $json.file_name }}",
+              "type": "string"
+            },
+            {
+              "id": "38771c8e-d28b-4d44-923b-5477e4a45a9b",
+              "name": "file_size",
+              "value": "={{ $json.file_size }}",
+              "type": "number"
+            },
+            {
+              "id": "6dbb25c9-cc8d-4834-bbd6-a392a34c28de",
+              "name": "indexMap",
+              "value": "={{ $json.indexMap }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2768,
+        592
+      ],
+      "id": "a32023a3-6d2c-4a56-9b28-606db04e64a8",
+      "name": "Extract index"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        5488,
+        768
+      ],
+      "id": "588d3970-02ff-426a-87b0-a8575df9bee2",
+      "name": "Add index"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        4800,
+        656
+      ],
+      "id": "50e2713f-5b0e-4efd-b744-8d745dde127f",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"type\": \"照片\",\n  \"is_inappropriate\": false,\n  \"inappropriate_reason\": null,\n  \"description\": \"一只橘猫趴在窗台上晒太阳。\"\n}",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        4576,
+        800
+      ],
+      "id": "377821dd-b197-4418-810c-0c5d5c9c95e1",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseFormat": "json_object"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        4544,
+        912
+      ],
+      "id": "c796722c-9ed4-4860-82b8-b3e50cfe9b2c",
+      "name": "DeepSeek Chat",
+      "credentials": {
+        "deepSeekApi": {
+          "id": "NnqO5cyPICQm7NBl",
+          "name": "DeepSeek account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "2bc470a4-d522-4d3c-891f-bb2069c85fc5",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3312,
+        912
+      ],
+      "id": "7fdfa611-fe81-4843-b284-d95c4ba48e78",
+      "name": "filter failed img"
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        5088,
+        768
+      ],
+      "id": "b9300a7b-a6c6-4b4d-89a3-5278f56be6c2",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "order"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        5216,
+        784
+      ],
+      "id": "573a1e1c-9750-474e-9fea-1ec7c7e07c18",
+      "name": "Sort"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "628bcb11-65b6-4bbb-badc-9aedc3ae709d",
+              "name": "analysis_text",
+              "value": "={{ $json.img_content }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        5344,
+        784
+      ],
+      "id": "744a93b3-a883-48a3-a5fd-0fad717eba56",
+      "name": "keep content only"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CREATE TABLE IF NOT EXISTS chat_images (\n    id BIGSERIAL PRIMARY KEY,\n    file_name TEXT NOT NULL UNIQUE,          -- 文件名唯一\n    file_size BIGINT,\n    analysis_text TEXT NOT NULL,\n    need_process BOOLEAN DEFAULT true,\n    created_at TIMESTAMPTZ DEFAULT NOW()\n);\n\nCREATE INDEX IF NOT EXISTS idx_image_file_name ON chat_images (file_name);\n\n-- SELECT * FROM chat_images;\n\n-- DROP TABLE IF EXISTS chat_images;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        5488,
+        592
+      ],
+      "id": "37b95e0c-22c7-4677-8c85-7206391a23ae",
+      "name": "Create chat_images DB",
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2c74b0f0-d5d9-4b8d-bef8-2386ef8c0dae",
+              "name": "file_name",
+              "value": "={{ $json.file_name }}",
+              "type": "string"
+            },
+            {
+              "id": "c97fff8b-1485-4a59-bd9c-a9f4a01ad236",
+              "name": "file_size",
+              "value": "={{ $json.file_size }}",
+              "type": "number"
+            },
+            {
+              "id": "db283427-1eb7-4b43-b1db-cd0cca0d60f1",
+              "name": "analysis_text",
+              "value": "={{ $json.analysis_text }}",
+              "type": "string"
+            },
+            {
+              "id": "ad3b8322-e99a-4ea2-8d39-88b2880b179f",
+              "name": "indexMap",
+              "value": "={{ $json.indexMap }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3184,
+        1040
+      ],
+      "id": "f2c7becb-8129-4e19-9f36-78968c1519e5",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO chat_images (\n    file_name,\n    file_size,\n    analysis_text,\n    need_process\n)\nSELECT \n    x.file_name,\n    x.file_size,\n    x.analysis_text,\n    true\nFROM jsonb_to_recordset($1::jsonb)\n         AS x(file_name text, file_size bigint, analysis_text text)\nON CONFLICT (file_name) DO UPDATE\nSET\n    file_size     = EXCLUDED.file_size,\n    analysis_text = EXCLUDED.analysis_text,\n    created_at    = NOW(),\n    need_process  = false;",
+        "options": {
+          "queryBatching": "single",
+          "queryReplacement": "={{ JSON.stringify(   $input.all().map(item => ({     file_name: item.json.file_name,     file_size: item.json.file_size,     analysis_text: item.json.analysis_text   })) ) }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        5632,
+        768
+      ],
+      "id": "fdf771f9-24ac-4fe6-99c9-6a7291486e54",
+      "name": "Insert chat_images",
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM chat_images;\n\n-- TRUNCATE TABLE chat_images RESTART IDENTITY;\n\n-- DELETE FROM chat_images WHERE file_name IN (\n--   '61b0f9d734979c4e013e2af30b7a00ef.mp4'\n-- );\n  \n-- 删除测试数据\n-- DELETE FROM chat_images\n-- WHERE file_name IN (\n--   'E551A8DEABAD439B74FF63DCFBB281B9.png',\n--   '696ED3F83D567E6D0281B0DE841FCF6E.png',\n--   'F488D2C6DFDB0DF0DF67550A81F6EDEE.png',\n--   '769CCBE4042B0E956FC7F079322F2438.png'\n-- );\n-- SELECT * FROM chat_images;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        5776,
+        592
+      ],
+      "id": "951dedb1-3a2c-4b85-b790-09de274950d6",
+      "name": "test chat_images",
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "2bc470a4-d522-4d3c-891f-bb2069c85fc5",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3312,
+        768
+      ],
+      "id": "a38c4f33-3474-4a28-b4a8-09c61d31e3da",
+      "name": "filter failed video"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3728,
+        912
+      ],
+      "id": "dbacf851-9c90-4255-8493-849afac27d89",
+      "name": "Merge5"
+    },
+    {
+      "parameters": {
+        "fileSelector": "=/files/{{ $('filter failed video').item.json.file_name.substring(0, $('filter failed video').item.json.file_name.lastIndexOf('.')) }}.jpg",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        3728,
+        656
+      ],
+      "id": "4752bcaa-0779-4c14-9bd1-622b21dc210b",
+      "name": "Read .jpg"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        4016,
+        768
+      ],
+      "id": "306e66b7-cc11-400e-b0d0-ba287f6b2ce7",
+      "name": "Merge4"
+    },
+    {
+      "parameters": {
+        "jsCode": "// return $input.all();\n\nconst test_url_list = [\n  \"https://static.nfapp.southcn.com/pic/201701/16/d52dbb6b-ca7a-404a-ade6-3632a7dccbb7.GIF.2\",\n  \"https://img2.chinadaily.com.cn/images/201.jpeg\", //error\n  \"https://img2.chinadaily.com.cn/images/201912/24/5e01b5aea310cf3e97ad548c.jpeg\",\n  \"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTz-NN04EukJVYLXZsh6Vql01OieX9U4TvJoA&s\",\n  \"https://e425c8ae84a9b41aa12fa.gif\", // error\n  \"https://p3.itc.cn/images01/20230331/2375fd134fae425c8ae84a9b41aa12fa.gif\",\n  \"https://upload.wikimedia.org/wikipedia/commons/f/f1/An_example_for_a_nailed_note.jpg\"\n];\n\n\nlet imageCounter = 0;\nreturn $input.all().map(item => {\n\n  if (!Array.isArray(item.json.message)) {\n    return item;\n  }\n\n  const newMessageArray = item.json.message.map(segment => {\n    \n    if (segment.type === 'image' && segment.data?.url) {\n      segment.data.url = test_url_list[imageCounter % test_url_list.length];\n      imageCounter++;\n    }\n    \n    return segment;\n  });\n\n  item.json.message = newMessageArray;\n  return item;\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2096,
+        1104
+      ],
+      "id": "917a970c-0bb5-4e34-bfdb-3246dafbcb91",
+      "name": "SwapMockURLs",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "let order = 0;\nfor (const item of $input.all()) {\n  item.json.msg_order_img = order++;\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2224,
+        1104
+      ],
+      "id": "b940eff5-83d6-43f0-a272-d88309c76739",
+      "name": "AddMsgOrder"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "58b500ad-7eef-46b7-80e6-4246baac68c1",
+      "typeVersion": 1.1,
+      "name": "SubTriger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        1904,
+        1024
+      ]
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        1904,
+        1184
+      ],
+      "id": "f094e62a-9cba-44d9-86a6-b4826e13915b",
+      "name": "TestTriger"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9e281858-2b8e-4162-958c-b315097ccce5",
+              "leftValue": "={{ $json.message.some(item => item.type === 'image' || item.type === 'video') }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2352,
+        1104
+      ],
+      "id": "d1ca89d6-032f-4aba-85b5-52bdea563764",
+      "name": "FilterMedia"
+    },
+    {
+      "parameters": {
+        "jsCode": "let occurrence = 0;\nconst indexMapByFile = {}; // key: image_id, value: { info, indexMap }\n\n$input.all().forEach((record, recordIndex) => {\n  const messages = record.json.message;\n  if (!Array.isArray(messages)) return;\n\n  messages.forEach((msg, msgIndex) => {\n    if (!['image', 'video'].includes(msg.type) || !msg.data?.url) return;\n\n    const fileName = msg.data.file; // 唯一标识\n    const fileSizeNum = Number(msg.data.file_size);\n    const safeFileSize = Number.isFinite(fileSizeNum) ? fileSizeNum : null;\n    const file_type = msg.type;\n\n    if (!indexMapByFile[fileName]) {\n      indexMapByFile[fileName] = {\n        file_url: msg.data.url,\n        file_name: fileName,\n        file_size: safeFileSize,\n        file_type: msg.data.summary ? msg.data.summary.slice(1, -1) : file_type,\n        analysis_text: null,\n        indexMap: [] // { itemIndex: recordIndex, msgIndex, imageIndex: occurrence }\n      };\n    }\n\n    indexMapByFile[fileName].indexMap.push({\n      itemIndex: recordIndex,   // 真实输入 item 下标\n      msgIndex                 // 消息内下标\n      // imageIndex: occurrence++  // 全局出现序号\n    });\n  });\n});\n\n// 转成 n8n 输出格式，并正确配对来源 input items\nconst outputs = Object.values(indexMapByFile).map(info => {\n  // 一个文件可能来自多个输入 item，去重后一并指明\n  const sources = [...new Set(info.indexMap.map(m => m.itemIndex))];\n  return {\n    json: info,\n    pairedItem: sources.map(i => ({ item: i }))\n  };\n});\n\nreturn outputs;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2496,
+        1024
+      ],
+      "id": "6f61757b-84cf-4188-8882-4f2ef5d4da54",
+      "name": "SplitMediaItems"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT ci.file_name, ci.file_size, ci.analysis_text, ci.need_process\nFROM chat_images ci\nJOIN jsonb_to_recordset($1::jsonb) AS v(file_name text)\n  ON ci.file_name = v.file_name;",
+        "options": {
+          "queryBatching": "single",
+          "queryReplacement": "={{ JSON.stringify(\n    $input.all().map(item => ({\n        file_name: String(item.json.file_name)\n    }))\n) }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2640,
+        1024
+      ],
+      "id": "d75a9fb7-f2b4-49ed-8a8f-d32bb8c05412",
+      "name": "CheckMediaCache",
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "480a8e91-5c15-481c-98e6-2de2f29b190d",
+              "leftValue": "={{ $json.analysis_text }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "770c6b14-140e-45b5-a933-799f7c984aef",
+              "leftValue": "={{ $json.need_process }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2896,
+        1024
+      ],
+      "id": "df094f98-02da-458c-a37c-f6e85258e71b",
+      "name": "FilterProcessed"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 从前一个节点获取原始 items（保留引用）\nconst prevTableItems = $('SplitMediaItems').all();\n\n// 给每个 item.json 加上 order\nconst prevTable = prevTableItems.map((item, index) => ({\n  ...item,\n  json: {\n    ...item.json,\n    order: index\n  }\n}));\n\n// 如果当前查询结果全空，直接返回带 order 的原始 items\nif (Object.keys($input.first().json).length === 0) {\n  return prevTable;\n}\n\n// 当前节点（DB 查询结果）的数据\nconst dbData = $input.all().map(item => item.json);\n\n// 建立 file_name → { analysis_text, need_process } 的映射\nconst lookup = new Map();\nfor (const row of dbData) {\n  if (row.file_name) {\n    lookup.set(row.file_name, {\n      analysis_text: row.analysis_text ?? '',\n      need_process: row.need_process ?? null\n    });\n  }\n}\n\n\n// 遍历 prevTable，匹配 file_name 并合并 analysis_text / need_process\nconst updated = prevTable.map(item => {\n  const row = { ...item.json };\n  if (lookup.has(row.file_name)) {\n    const dbRow = lookup.get(row.file_name);\n    row.analysis_text = dbRow.analysis_text;\n    row.need_process = dbRow.need_process;\n  }\n  return { ...item, json: row }; // 保留原 item 结构\n});\n\n\nreturn updated;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2768,
+        1024
+      ],
+      "id": "bf574507-be49-4018-9dc4-d0a8f60bb6ca",
+      "name": "MapCache"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b9c2da38-a3be-4307-b381-ad99ae36896b",
+              "leftValue": "={{ $json.file_type }}",
+              "rightValue": "video",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3040,
+        848
+      ],
+      "id": "380434ed-629f-44cc-b9cc-08709e7be1ec",
+      "name": "IsVideo"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.file_url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "file_data"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3184,
+        768
+      ],
+      "id": "7a13518f-b126-43ad-8706-e991efd1c06d",
+      "name": "DLVideo",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.file_url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "file_data"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3184,
+        912
+      ],
+      "id": "60dcbc54-0dd4-4974-92ca-0dd2705ea56b",
+      "name": "DLImage",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "command": "=in=\"/files/{{ $json.file_name }}\"\nout=\"/files/{{ $json.file_name.substring(0, $json.file_name.lastIndexOf('.')) }}.jpg\"\n\n# 获取视频时长（秒，浮点）\ndur=$(ffprobe -v error -show_entries format=duration -of default=nw=1:nk=1 \"$in\")\n\n# 根据时长选择宫格\nif (( $(echo \"$dur <= 15\" | bc -l) )); then\n  C=3; R=3\nelif (( $(echo \"$dur <= 45\" | bc -l) )); then\n  C=5; R=5\nelse\n  C=6; R=6\nfi\n\nN=$((C*R))\nstep=$(awk -v d=\"$dur\" -v n=\"$N\" 'BEGIN{printf \"%.6f\", d/n}')\n\n# 控制总宽度，避免生成超大图\ntotal_w=1920\nw=$(( total_w / C ))\n\nffmpeg -y -i \"$in\" \\\n  -vf \"select='isnan(prev_selected_t)+gte(t-prev_selected_t\\,${step})',scale=${w}:-2,tile=${C}x${R}\" \\\n  -frames:v 1 -q:v 2 \"$out\""
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        3600,
+        656
+      ],
+      "id": "323150ad-6cf2-44f8-bf27-d41a49f48092",
+      "name": "GenVideoGrid"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=/files/{{ $json.file_name }}",
+        "dataPropertyName": "file_data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        3472,
+        656
+      ],
+      "id": "70aa091f-cd5a-4f8e-a6b9-6339f18c0eb2",
+      "name": "SaveToDisk"
+    },
+    {
+      "parameters": {
+        "operation": "resize",
+        "dataPropertyName": "file_data",
+        "width": 1536,
+        "height": 1536,
+        "resizeOption": "onlyIfLarger",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.editImage",
+      "typeVersion": 1,
+      "position": [
+        3728,
+        784
+      ],
+      "id": "e1e9395f-94bd-46a0-b2fc-5bfeffd608d7",
+      "name": "ResizeImage"
+    },
+    {
+      "parameters": {
+        "command": "=rm \"/files/{{ $('filter failed video').item.json.file_name.substring(0, $('filter failed video').item.json.file_name.lastIndexOf('.')) }}\"*"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        4016,
+        624
+      ],
+      "id": "a43e1033-3c26-426c-b02d-5e5f06af4cbf",
+      "name": "DeleteFiles"
+    },
+    {
+      "parameters": {
+        "jsCode": "const origin_input = $('FilterMedia').all();\n\n$input.all().forEach(item => {\n  const analysis_text = item.json.analysis_text;\n  item.json.indexMap.forEach(index => {\n    const itemIndex = index.itemIndex;\n    const msgIndex = index.msgIndex;\n    \n    const original_image_info = origin_input[itemIndex].json;\n    original_image_info.message[msgIndex].data = {text : analysis_text};\n  })\n});\n\nreturn origin_input;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5776,
+        1024
+      ],
+      "id": "f8bde753-12e6-48c0-b891-1f4d12f2e576",
+      "name": "ResolveMediaMeaning"
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "msg_order_img"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        6048,
+        1104
+      ],
+      "id": "a2958f66-7fe5-47cf-80f0-812f818fde37",
+      "name": "SyncMsgOrder"
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const item of $input.all()) {\n  delete item.json.msg_order_img;\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6176,
+        1104
+      ],
+      "id": "83a77f38-e6e1-4612-9fcb-92de28e3b223",
+      "name": "CleanOrderData"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        5920,
+        1104
+      ],
+      "id": "070ff1ef-a618-410a-bf05-cbe6091c0745",
+      "name": "MergeMsg2"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        5632,
+        1024
+      ],
+      "id": "2dff5cc6-c700-4d8b-8afc-fb4640900999",
+      "name": "MergeMsg1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        5776,
+        768
+      ],
+      "id": "93b8fd0f-0786-4ab1-800f-2f9563b4876d",
+      "name": "NoOp1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        5216,
+        1040
+      ],
+      "id": "f515054e-4035-4a2f-94dd-e0a7f977d7a5",
+      "name": "NoOp2"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        5216,
+        592
+      ],
+      "id": "5317d4be-4af8-4e33-91a6-8cee2ed764d5",
+      "name": "NoOp"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "=qwen-vl-plus-latest",
+          "mode": "id"
+        },
+        "text": "=你是一个顶级的AI图像分析引擎，专为社交聊天内容设计。你的任务是精准、快速地分析**视频关键帧拼图**（多帧画面按时间顺序拼接成的宫格图），并将其视作视频内容进行理解和描述，返回一个纯粹的、语法正确的JSON对象。\n\n### 核心规则:\n1. **绝对不要**使用Markdown代码块或任何解释性文字。\n2. 你的整个回复必须**直接以 `{` 开始，并以 `}` 结束**。\n3. `type` 字段固定为 `\"视频\"` 或 `\"video\"`（根据需求选择）。\n4. `description` 字段必须基于视频内容进行客观简洁的描述，可包含场景、人物、动作等关键信息，**限制在50个字以内**。\n5. `is_inappropriate` 字段必须严格审查，涵盖色情、暴力等内容。\n\n### JSON结构定义:\n{\n  \"type\": \"string\", // 固定为 \"视频\" 或 \"video\"\n  \"is_inappropriate\": boolean, // 图片是否包含不当内容\n  \"inappropriate_reason\": \"string | null\", // 如果不当，简要说明原因 (如: \"色情内容\")；否则为 null\n  \"description\": \"string\" // 核心内容描述（≤50字，基于视频内容）\n}\n\n现在，请开始分析。",
+        "inputType": "base64",
+        "options": {
+          "detail": "low"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        3856,
+        656
+      ],
+      "id": "dd68c42f-a6c1-4118-b224-c02d3166f8d6",
+      "name": "VideoInference",
+      "alwaysOutputData": false,
+      "notesInFlow": false,
+      "executeOnce": false,
+      "credentials": {
+        "openAiApi": {
+          "id": "r7QNMzkK8NA1SlwA",
+          "name": "Qwen"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "=qwen-vl-plus-latest",
+          "mode": "id"
+        },
+        "text": "=你是一个顶级的 AI 图像分析引擎，专为社交聊天内容设计。你的任务是精准、快速地分析图片，并返回一个纯粹的、语法正确的 JSON 对象。\n\n## 核心规则\n1. 绝对不要使用 Markdown 代码块或任何解释性文字。\n2. 整个回复必须直接以 `{` 开始，并以 `}` 结束。\n3. description 字段生成规则：\n   - 如果图片中包含结构化或半结构化文字信息（如名片、海报、介绍页、公告等），提取并总结关键信息，包括标题、主体名称、时间、地点、价格、联系方式、主要内容、特色亮点等，字数不限。\n   - 如果图片是纯文本或包含大量文字，提炼核心信息，字数不限。\n   - 如果图片为纯视觉内容（无明显文字或文字极少），用简洁、客观的语言描述主要画面元素，字数建议不超过 50 字。\n   - 如果图片中的文字或信息量很少，可以直接全量提取，不必压缩。\n   - 在任何类型的图片中，若存在可量化信息（如数字、百分比、时间、价格、评分、数量等），应优先保留并准确呈现。\n   - 如果图片为风景类照片，应在描述中尽可能识别并推测可能的地理位置信息（如城市、地标、自然景观名称等），并在无法确定时说明“位置不明”。\n4. is_inappropriate 字段必须严格审查，涵盖色情、暴力、仇恨、违法等内容，值为 true 或 false。\n\n## 输入提示\n- 用户提供的类型提示: {{ $json.file_type }}\n- 该提示仅供参考，请以图片实际内容为准进行最终判断。\n\n## JSON 结构定义\n{\n  \"type\": \"string\",                // 最终判断的图片类型，必须是以下之一: \"照片\", \"表情包\", \"截图\", \"插画\", \"图表\", \"文档\", \"二维码\", \"其他\"\n  \"is_inappropriate\": boolean,     // 图片是否包含不当内容\n  \"inappropriate_reason\": \"string | null\", // 如果不当，简要说明原因 (如: \"色情内容\")；否则为 null\n  \"description\": \"string\"          // 核心内容描述\n}\n\n现在，请开始分析。",
+        "inputType": "base64",
+        "binaryPropertyName": "file_data",
+        "options": {
+          "detail": "low"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        3856,
+        784
+      ],
+      "id": "6cbeb309-e91f-4d31-a231-2a38e937b17f",
+      "name": "ImageInference",
+      "alwaysOutputData": false,
+      "notesInFlow": false,
+      "executeOnce": false,
+      "credentials": {
+        "openAiApi": {
+          "id": "r7QNMzkK8NA1SlwA",
+          "name": "Qwen"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4f1ddde2-fb28-47ed-9cb7-a3175598c834",
+              "leftValue": "={{ $json.error == undefined }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4144,
+        768
+      ],
+      "id": "b9f0d9a8-ed17-4e4a-aeba-345f51fe9a6c",
+      "name": "CheckInferenceError"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const item = $input.item.json;\nlet contentString = item.content;\n\n// 1. 智能清理\nif (contentString.trim().startsWith('```')) {\n  const match = contentString.match(/```(json)?\\n([\\s\\S]*?)\\n```/);\n  if (match && match[2]) {\n    contentString = match[2];\n  }\n}\n// 增加对不带换行符的包裹的处理\nelse if (contentString.trim().startsWith('{') === false) {\n  const match = contentString.match(/({[\\s\\S]*})/);\n  if (match && match[0]) {\n    contentString = match[0];\n  }\n}\n\n// 2. 尝试解析并输出结果\ntry {\n  const parsedJson = JSON.parse(contentString);\n  // 成功：输出is_valid=true和解析后的数据\n  return {output: parsedJson};\n} catch (error) {\n  // 失败：输出is_valid=false和原始的错误内容\n  return {\n    raw_content: item.content\n  };\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4288,
+        656
+      ],
+      "id": "59780589-2e01-406a-bfef-139005418e2f",
+      "name": "ParseInference"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c8161872-58a8-4f18-a15d-c64befd2b9f1",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4416,
+        656
+      ],
+      "id": "a2afc83d-3726-4151-bb01-7527983fff73",
+      "name": "ValidateSchema"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=修复以下文本:\n{{ $json.raw_content }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "你是一个JSON修复工具。你上一次的输出不符合标准的JSON格式。请修复以下文本，确保它是一个完整、纯净、语法正确的JSON对象。绝对不要添加任何解释或Markdown代码块，直接返回修复后的JSON。"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        4544,
+        672
+      ],
+      "id": "163299ef-90d1-4c6c-b1b8-827b2acaf24b",
+      "name": "RepairJsonFormat"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const imageInfo = $('FilterProcessed').item.json;\nconst order = imageInfo.order;\nconst image_type = imageInfo.image_type;\n\nif (!$json.output.type) {\n  return {\n    order: order,\n    img_content:'[' + image_type + ' | 状态: 解析失败]'\n  };\n}\n\n// 编辑输出格式\nlet img_content = '[' + $json.output.type;\n\nif ($json.output.is_inappropriate) {\n  img_content += ' | 状态: 不合规-' + $json.output.inappropriate_reason;\n}\n\n img_content += ' | 内容: ' + $json.output.description + ']';\n\nreturn {\n  order: order,\n  img_content: img_content\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4928,
+        656
+      ],
+      "id": "d8868c8f-274b-4a19-8a13-4327129616e1",
+      "name": "PrepFinalResult"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const imageInfo = $('FilterProcessed').item.json;\nconst order = imageInfo.order;\nconst image_type = imageInfo.image_type;\n\nreturn {\n  order: order,\n  img_content:'[' + image_type + ' | 状态: 解析失败,内容不合规]'\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4928,
+        784
+      ],
+      "id": "848b22f3-fdda-454c-8fa4-e672db90d22d",
+      "name": "PrepErrorPayload"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const imageInfo = $('FilterProcessed').item.json;\nconst order = imageInfo.order;\nconst image_type = imageInfo.image_type;\n\nreturn {\n  order: order,\n  img_content: '['+image_type+' | 状态: 加载失败]'\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4928,
+        912
+      ],
+      "id": "3d4206bd-f33f-4d6d-bf46-600842dcee75",
+      "name": "PrepInvalidPayload"
+    }
+  ],
+  "connections": {
+    "Extract index": {
+      "main": [
+        [
+          {
+            "node": "NoOp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add index": {
+      "main": [
+        [
+          {
+            "node": "MergeMsg1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Insert chat_images",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "PrepFinalResult",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "RepairJsonFormat",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek Chat": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "RepairJsonFormat",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Structured Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "filter failed img": {
+      "main": [
+        [
+          {
+            "node": "ResizeImage",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Merge5",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Sort",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sort": {
+      "main": [
+        [
+          {
+            "node": "keep content only",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "keep content only": {
+      "main": [
+        [
+          {
+            "node": "Add index",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "NoOp2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert chat_images": {
+      "main": [
+        [
+          {
+            "node": "NoOp1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "filter failed video": {
+      "main": [
+        [
+          {
+            "node": "SaveToDisk",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Merge5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge5": {
+      "main": [
+        [
+          {
+            "node": "PrepInvalidPayload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read .jpg": {
+      "main": [
+        [
+          {
+            "node": "VideoInference",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge4": {
+      "main": [
+        [
+          {
+            "node": "CheckInferenceError",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SwapMockURLs": {
+      "main": [
+        [
+          {
+            "node": "AddMsgOrder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AddMsgOrder": {
+      "main": [
+        [
+          {
+            "node": "FilterMedia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SubTriger": {
+      "main": [
+        [
+          {
+            "node": "SwapMockURLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TestTriger": {
+      "main": [
+        [
+          {
+            "node": "SwapMockURLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FilterMedia": {
+      "main": [
+        [
+          {
+            "node": "SplitMediaItems",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "MergeMsg2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "SplitMediaItems": {
+      "main": [
+        [
+          {
+            "node": "CheckMediaCache",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Extract index",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CheckMediaCache": {
+      "main": [
+        [
+          {
+            "node": "MapCache",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FilterProcessed": {
+      "main": [
+        [
+          {
+            "node": "IsVideo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MapCache": {
+      "main": [
+        [
+          {
+            "node": "FilterProcessed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IsVideo": {
+      "main": [
+        [
+          {
+            "node": "DLVideo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "DLImage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DLVideo": {
+      "main": [
+        [
+          {
+            "node": "filter failed video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DLImage": {
+      "main": [
+        [
+          {
+            "node": "filter failed img",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GenVideoGrid": {
+      "main": [
+        [
+          {
+            "node": "Read .jpg",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SaveToDisk": {
+      "main": [
+        [
+          {
+            "node": "GenVideoGrid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ResizeImage": {
+      "main": [
+        [
+          {
+            "node": "ImageInference",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ResolveMediaMeaning": {
+      "main": [
+        [
+          {
+            "node": "MergeMsg2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SyncMsgOrder": {
+      "main": [
+        [
+          {
+            "node": "CleanOrderData",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MergeMsg2": {
+      "main": [
+        [
+          {
+            "node": "SyncMsgOrder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MergeMsg1": {
+      "main": [
+        [
+          {
+            "node": "ResolveMediaMeaning",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NoOp2": {
+      "main": [
+        [
+          {
+            "node": "MergeMsg1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "NoOp": {
+      "main": [
+        [
+          {
+            "node": "Add index",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VideoInference": {
+      "main": [
+        [
+          {
+            "node": "Merge4",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "DeleteFiles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ImageInference": {
+      "main": [
+        [
+          {
+            "node": "Merge4",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "CheckInferenceError": {
+      "main": [
+        [
+          {
+            "node": "ParseInference",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "PrepErrorPayload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ParseInference": {
+      "main": [
+        [
+          {
+            "node": "ValidateSchema",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ValidateSchema": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "RepairJsonFormat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RepairJsonFormat": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "PrepFinalResult": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PrepErrorPayload": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "PrepInvalidPayload": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "SubTriger": [
+      {
+        "json": {
+          "self_id": 222222,
+          "user_id": 222222,
+          "time": "2025-08-26 08:29:08",
+          "message_id": 1566653401,
+          "message_seq": 1566653401,
+          "real_id": 1566653401,
+          "real_seq": "3840",
+          "message_type": "group",
+          "sender": {
+            "user_id": 222222,
+            "nickname": "REDACTED_NICKNAME_3",
+            "card": "REDACTED_NICKNAME_4",
+            "role": "admin"
+          },
+          "font": 14,
+          "sub_type": "normal",
+          "message": [
+            {
+              "type": "video",
+              "data": {
+                "file": "61b0f9d734979c4e013e2af30b7a00ef.mp4",
+                "url": "https://vjs.zencdn.net/v/oceans.mp4",
+                "file_size": "1985428"
+              }
+            }
+          ],
+          "message_format": "array",
+          "post_type": "message_sent",
+          "message_sent_type": "self",
+          "group_id": 8888888888,
+          "target_id": 8888888888,
+          "db_format": {
+            "send_at": "2025-08-26 08:29:08",
+            "msg_id": 1566653401,
+            "group_id": 8888888888,
+            "user_id": 222222,
+            "msg_type": "message",
+            "reply_to_msg_id": null,
+            "msg": null,
+            "raw_msg": {
+              "self_id": 222222,
+              "user_id": 222222,
+              "time": 1756196948,
+              "message_id": 1566653401,
+              "message_seq": 1566653401,
+              "real_id": 1566653401,
+              "real_seq": "3840",
+              "message_type": "group",
+              "sender": {
+                "user_id": 222222,
+                "nickname": "REDACTED_NICKNAME_3",
+                "card": "REDACTED_NICKNAME_4",
+                "role": "admin"
+              },
+              "font": 14,
+              "sub_type": "normal",
+              "message": [
+                {
+                  "type": "video",
+                  "data": {
+                    "file": "61b0f9d734979c4e013e2af30b7a00ef.mp4",
+                    "url": "https://multimedia.nt.qq.com.cn:443/download?appid=1415&format=origin&orgfmt=t264&spec=0&client_proto=ntv2&client_appid=537298509&client_type=linux&client_ver=3.2.18-36580&client_down_type=auto&client_aio_type=aio&rkey=CAISoAGKPkFJeHAjcpnL9cVBjV03C7D6h6A5HjjG35g7c6LNXb05NfYz1iR1K1_u3P5KC9uTHM_2Gti3ciVwSb9lqqG15yvloeomlddWN8_d9_mkjBllnUZIRebfVZsvVp04dGWbksQQnrjpvpZItx-5wmCNBaBFMc9xbRdPN_s5jU1iaL3XzI1waKeLbOT9PHtcLMKJBCoqS09koOoIUScZMW6c",
+                    "file_size": "1985428"
+                  }
+                }
+              ],
+              "message_format": "array",
+              "post_type": "message_sent",
+              "message_sent_type": "self",
+              "group_id": 8888888888,
+              "target_id": 8888888888
+            }
+          }
+        }
+      }
+    ],
+    "TestTriger": [
+      {
+        "json": {
+          "order": 1,
+          "level": 1,
+          "sender": "REDACTED_NICKNAME_8",
+          "type": 3,
+          "message": [
+            {
+              "type": "image",
+              "data": {
+                "summary": "",
+                "file": "E551A8DEABAD439B74FF63DCFBB281B9.png",
+                "sub_type": 0,
+                "url": "https://static.nfapp.southcn.com/pic/201701/16/d52dbb6b-ca7a-404a-ade6-3632a7dccbb7.GIF.2",
+                "file_size": "297332"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "https://www.bilibili.com/video/BV1cZYWzqErg/?spm_id_from=333.1387.favlist.content.click&vd_source=afd75ffbd18e4082cc900655f9b0f517"
+              }
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 2,
+          "level": 1,
+          "sender": "REDACTED_NICKNAME_8",
+          "type": 3,
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "不确定有没有卸载的win+r输入cmd打开命令提示符，复制wusa /uninstall /kb:5063878 提示没安装就是卸载成功了"
+              }
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 3,
+          "level": 1,
+          "sender": "REDACTED_NICKNAME_8",
+          "type": 3,
+          "message": [
+            {
+              "type": "image",
+              "data": {
+                "summary": "",
+                "file": "696ED3F83D567E6D0281B0DE841FCF6E.png",
+                "sub_type": 0,
+                "url": "https://img2.chinadaily.com.cn/images/201.jpeg",
+                "file_size": "18245"
+              }
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 4,
+          "level": 1,
+          "sender": "REDACTED_NICKNAME_8",
+          "type": 1,
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "目前明确涉及的系统版本\nWindows 11:\n24H2 KB5063878 (26100.4946)\n23H2 KB5063875 (22621.5768 & 22631.5768)\n\nWindows 10:\n22H2 & 21H2 KB5063709 (19044.6216 & 19045.6216)\n1809 KB5063877 (17763.7678)\n1607 KB5063871 (14393.8330)\nTH1 KB5063889 (10240.21100)"
+              }
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 5,
+          "level": 1,
+          "sender": "REDACTED_NICKNAME_8",
+          "type": 1,
+          "message": [
+            {
+              "type": "image",
+              "data": {
+                "summary": "",
+                "file": "F488D2C6DFDB0DF0DF67550A81F6EDEE.png",
+                "sub_type": 0,
+                "url": "https://img2.chinadaily.com.cn/images/201912/24/5e01b5aea310cf3e97ad548c.jpeg",
+                "file_size": "77537"
+              }
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 6,
+          "level": 0,
+          "sender": "REDACTED_NICKNAME_3",
+          "type": 3,
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "害，ok"
+              }
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 9,
+          "level": 2,
+          "sender": "REDACTED_NICKNAME_3",
+          "type": 1,
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "你好"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "[系统表情: 害羞]"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "呀"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "[系统表情: 玫瑰]"
+              }
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 10,
+          "level": 2,
+          "sender": "REDACTED_NICKNAME_1",
+          "type": 1,
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "今天学习任务完成了吗？"
+              }
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 11,
+          "level": 1,
+          "sender": "REDACTED_NICKNAME_1",
+          "type": 3,
+          "message": [
+            {
+              "type": "reply",
+              "data": {
+                "id": "756918357"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "hi "
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "[系统表情: 狂笑]"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "[系统表情: 喵喵]"
+              }
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 13,
+          "level": 2,
+          "sender": "REDACTED_NICKNAME_3",
+          "type": 3,
+          "message": [
+            {
+              "type": "image",
+              "data": {
+                "summary": "[动画表情]",
+                "file": "769CCBE4042B0E956FC7F079322F2438.png",
+                "sub_type": 1,
+                "url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTz-NN04EukJVYLXZsh6Vql01OieX9U4TvJoA&s",
+                "file_size": "36468"
+              }
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 14,
+          "level": 2,
+          "sender": "REDACTED_NICKNAME_1",
+          "type": 1,
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "呵呵"
+              }
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 15,
+          "level": 2,
+          "sender": "REDACTED_NICKNAME_1",
+          "type": 3,
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "emoji表情😍😘\n小黄脸表情"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "[系统表情: 害羞]"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "[系统表情: 摸锦鲤]"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "\n超级表情"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "[系统表情: 菜汪]"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "[系统表情: 崇拜]"
+              }
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 16,
+          "level": 0,
+          "sender": "REDACTED_NICKNAME_3",
+          "type": 1,
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "[hi]"
+              }
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 17,
+          "level": 0,
+          "sender": "REDACTED_NICKNAME_8",
+          "type": 3,
+          "message": [
+            {
+              "type": "image",
+              "data": {
+                "summary": "",
+                "file": "E551A8DEABAD439B74FF63DCFBB281B9.png",
+                "sub_type": 0,
+                "url": "https://static.nfapp.southcn.com/pic/201701/16/d52dbb6b-ca7a-404a-ade6-3632a7dccbb7.GIF.2",
+                "file_size": "297332"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "https://www.bilibili.com/video/BV1cZYWzqErg/?spm_id_from=333.1387.favlist.content.click&vd_source=afd75ffbd18e4082cc900655f9b0f517"
+              }
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 18,
+          "level": 0,
+          "sender": "REDACTED_NICKNAME_8",
+          "type": 3,
+          "message": [
+            {
+              "type": "image",
+              "data": {
+                "summary": "",
+                "file": "E551A8DEABAD439B74FF63DCFBB281B9.png",
+                "sub_type": 0,
+                "url": "https://static.nfapp.southcn.com/pic/201701/16/d52dbb6b-ca7a-404a-ade6-3632a7dccbb7.GIF.2",
+                "file_size": "297332"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "https://www.bilibili.com/video/BV1cZYWzqErg/?spm_id_from=333.1387.favlist.content.click&vd_source=afd75ffbd18e4082cc900655f9b0f517"
+              }
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 19,
+          "level": 0,
+          "sender": "REDACTED_NICKNAME_8",
+          "type": 3,
+          "message": [
+            {
+              "type": "image",
+              "data": {
+                "summary": "",
+                "file": "E551A8DEABAD439B74FF63DCFBB281B9.png",
+                "sub_type": 0,
+                "url": "https://static.nfapp.southcn.com/pic/201701/16/d52dbb6b-ca7a-404a-ade6-3632a7dccbb7.GIF.2",
+                "file_size": "297332"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "https://www.bilibili.com/video/BV1cZYWzqErg/?spm_id_from=333.1387.favlist.content.click&vd_source=afd75ffbd18e4082cc900655f9b0f517"
+              }
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 20,
+          "level": 0,
+          "sender": "REDACTED_NICKNAME_8",
+          "type": 3,
+          "message": [
+            {
+              "type": "image",
+              "data": {
+                "summary": "",
+                "file": "E551A8DEABAD439B74FF63DCFBB281B9.png",
+                "sub_type": 0,
+                "url": "https://p3.itc.cn/images01/20230331/2375fd134fae425c8ae84a9b41aa12fa.gif",
+                "file_size": "297332"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "https://upload.wikimedia.org/wikipedia/commons/f/f1/An_example_for_a_nailed_note.jpg"
+              }
+            }
+          ],
+          "is_container": false
+        }
+      }
+    ]
+  },
+  "versionId": "48c0f72d-dfdb-4a27-bb6f-84bd97b78a0d",
+  "tags": [
+    {
+      "updatedAt": "2025-09-02T03:07:39.232Z",
+      "createdAt": "2025-09-02T03:07:39.232Z",
+      "id": "QPm6Jx9oO3RUCGLx",
+      "name": "ChatBot"
+    }
+  ]
+}

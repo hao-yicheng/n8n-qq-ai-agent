@@ -1,0 +1,138 @@
+#!/bin/bash
+# Backup n8n (Workflows JSON + Data + Optional SQLite), Postgres, and compose folders to Samba
+# Logic: Dynamic path resolution, n8n CLI export, local staging for speed, and streamed upload.
+
+set -euo pipefail
+
+# ---------------------------------------------------------
+# 1. Configuration Area
+# ---------------------------------------------------------
+# changeme
+SAMBA_SERVER="<your_samba_server_ip>"   # example: "192.168.1.100"
+
+# changeme
+SAMBA_SHARE="<your_samba_share_name>"  # example: "Backups"
+
+# changeme
+CRED_FILE="<path_to_samba_credentials>" # example: "/home/user/.smbcreds"
+
+# changeme
+REMOTE_DIR="<path/on/samba/share>"      # example: "my_server_backups/n8n"
+
+# changeme
+LOG_FILE="/var/log/n8n_backup.log"       # example: "/var/log/n8n_backup.log"
+
+# Define base temporary directory for staging
+BASE_TEMP_DIR="/tmp"
+
+# changeme
+N8N_CONTAINER="n8n"                      # example: "my-n8n-container"
+
+# changeme
+POSTGRES_CONTAINER="n8n-postgres"          # example: "my-postgres-container"
+
+# changeme
+COMPOSE_DIRS=("/path/to/n8n-compose" "/path/to/napcat-compose") # example: ("/opt/docker/n8n" "/opt/docker/chat")
+
+# Log helper
+log() {
+  echo "[$(date '+%F %T')] $1" | tee -a "$LOG_FILE"
+}
+
+log "========== START BACKUP TASK =========="
+
+# ---------------------------------------------------------
+# 2. Pre-flight Checks & Path Resolution
+# ---------------------------------------------------------
+
+# Resolve volume mountpoints via Container Name
+LOCAL_N8N_DIR=$(docker inspect -f '{{ range .Mounts }}{{ if eq .Destination "/home/node/.n8n" }}{{ .Source }}{{ end }}{{ end }}' "$N8N_CONTAINER")
+LOCAL_POSTGRES_DIR=$(docker inspect -f '{{ range .Mounts }}{{ if eq .Type "volume" }}{{ .Source }}{{ end }}{{ end }}' "$POSTGRES_CONTAINER")
+
+# Timestamp & Staging Names
+TIMESTAMP=$(date +%Y%m%d_%H%M)
+STAGING_DIR="${BASE_TEMP_DIR}/n8n_staging_${TIMESTAMP}"
+N8N_BACKUP_FILE="n8n_backup_${TIMESTAMP}.tar.gz"
+PG_BACKUP_FILE="postgres_backup_${TIMESTAMP}.dump"
+COMPOSE_BACKUP_FILE="compose_backup_${TIMESTAMP}.tar.gz"
+
+# Basic validation
+if [ -z "$LOCAL_N8N_DIR" ]; then log "Error: Could not find mount for $N8N_CONTAINER"; exit 1; fi
+if ! command -v smbclient >/dev/null 2>&1; then log "Error: smbclient not found"; exit 1; fi
+PV_AVAILABLE=$(command -v pv >/dev/null 2>&1 && echo "true" || echo "false")
+
+# ---------------------------------------------------------
+# >>> STAGE: n8n (JSON Workflows + SQLite + Configs) <<<
+# ---------------------------------------------------------
+log ">>> STAGE: n8n (Workflows & Data) <<<"
+
+log "Enforcing secure permissions and directory structure..."
+# Ensure the export directory structure exists with professional naming
+docker exec -u root "$N8N_CONTAINER" mkdir -p /home/node/.n8n/workflow_exports/monolithic_package >>"$LOG_FILE" 2>&1
+docker exec -u root "$N8N_CONTAINER" mkdir -p /home/node/.n8n/workflow_exports/individual_workflows >>"$LOG_FILE" 2>&1
+# Grant ownership to node user
+docker exec -u root "$N8N_CONTAINER" chown -R node:node /home/node/.n8n/workflow_exports >>"$LOG_FILE" 2>&1
+# Restrict permissions for sensitive config (Fixes 0644 warning)
+docker exec -u root "$N8N_CONTAINER" chmod 600 /home/node/.n8n/config >>"$LOG_FILE" 2>&1
+
+# Step A: Export all workflows into a single monolithic bundle (Ideal for full recovery)
+log "Exporting monolithic workflow bundle..."
+docker exec -u node "$N8N_CONTAINER" n8n export:workflow --all --output=/home/node/.n8n/workflow_exports/monolithic_package/all_workflows.json >>"$LOG_FILE" 2>&1 || log "Warning: Monolithic export failed"
+
+# Step B: Export workflows as separate files (Ideal for GitHub/Git version control)
+log "Exporting separated workflow files..."
+docker exec -u node "$N8N_CONTAINER" n8n export:workflow --all --separate --output=/home/node/.n8n/workflow_exports/individual_workflows/ >>"$LOG_FILE" 2>&1 || log "Warning: Individual export failed"
+
+# Step C: Copy non-SQLite data to staging (Fast local IO)
+log "Copying configurations and exports to local staging..."
+rsync -a --exclude='database.sqlite' "${LOCAL_N8N_DIR}/" "$STAGING_DIR/" >>"$LOG_FILE" 2>&1
+
+# Step D: Try to copy SQLite
+log "Attempting to copy database.sqlite to staging..."
+if cp "${LOCAL_N8N_DIR}/database.sqlite" "$STAGING_DIR/" 2>>"$LOG_FILE"; then
+    log "SQLite copy successful"
+else
+    log "Warning: SQLite copy failed, proceeding without it"
+fi
+
+# Step E: Streamed Upload
+log "Streaming n8n staging to Samba: ${N8N_BACKUP_FILE}"
+TAR_CMD="tar -cz -C ${STAGING_DIR} ."
+if [ "$PV_AVAILABLE" = "true" ]; then
+    $TAR_CMD | pv -t -r -b | smbclient "//${SAMBA_SERVER}/${SAMBA_SHARE}" -A "${CRED_FILE}" -m SMB3 \
+        -c "mkdir ${REMOTE_DIR} 2>/dev/null; cd ${REMOTE_DIR}; put - ${N8N_BACKUP_FILE}" >>"$LOG_FILE" 2>&1
+else
+    $TAR_CMD | smbclient "//${SAMBA_SERVER}/${SAMBA_SHARE}" -A "${CRED_FILE}" -m SMB3 \
+        -c "mkdir ${REMOTE_DIR} 2>/dev/null; cd ${REMOTE_DIR}; put - ${N8N_BACKUP_FILE}" >>"$LOG_FILE" 2>&1
+fi
+
+rm -rf "$STAGING_DIR"
+log "n8n backup completed."
+
+# ---------------------------------------------------------
+# >>> STAGE: Postgres Database (Full Dump) <<<
+# ---------------------------------------------------------
+log ">>> STAGE: Postgres Database <<<"
+TMP_PG_BACKUP="${BASE_TEMP_DIR}/${PG_BACKUP_FILE}"
+
+log "Dumping msg_db from ${POSTGRES_CONTAINER}..."
+docker exec -t "$POSTGRES_CONTAINER" pg_dump -U n8n -F c msg_db > "$TMP_PG_BACKUP" || { log "Error: PG dump failed"; exit 1; }
+
+log "Uploading Postgres backup to Samba..."
+smbclient "//${SAMBA_SERVER}/${SAMBA_SHARE}" -A "${CRED_FILE}" -m SMB3 -c "cd ${REMOTE_DIR}; put ${TMP_PG_BACKUP} ${PG_BACKUP_FILE}" >>"$LOG_FILE" 2>&1
+rm -f "$TMP_PG_BACKUP"
+
+# ---------------------------------------------------------
+# >>> STAGE: Compose Project Folders <<<
+# ---------------------------------------------------------
+log ">>> STAGE: Compose Folders <<<"
+TMP_COMPOSE_BACKUP="${BASE_TEMP_DIR}/${COMPOSE_BACKUP_FILE}"
+
+log "Packing compose directories..."
+tar -czf "$TMP_COMPOSE_BACKUP" "${COMPOSE_DIRS[@]}" >>"$LOG_FILE" 2>&1
+
+log "Uploading compose backup to Samba..."
+smbclient "//${SAMBA_SERVER}/${SAMBA_SHARE}" -A "${CRED_FILE}" -m SMB3 -c "cd ${REMOTE_DIR}; put ${TMP_COMPOSE_BACKUP} ${COMPOSE_BACKUP_FILE}" >>"$LOG_FILE" 2>&1
+rm -f "$TMP_COMPOSE_BACKUP"
+
+log "========== END TASK =========="

@@ -1,0 +1,476 @@
+{
+  "id": "2qhO8U4htIk6tFA3",
+  "name": "QQBot - Tool - HistorySearch",
+  "description": null,
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a2c532f6-26f5-4421-b4de-2b5b1edca105",
+              "name": "group_id",
+              "value": "6666666666",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        736
+      ],
+      "id": "b34d8286-62ff-4f69-847e-b7cf2b15bb11",
+      "name": "SetGroupId"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH stats AS (\n  SELECT\n    group_id,\n    -- 各状态计数\n    COUNT(*) FILTER (WHERE embedding_status = 'pending')    AS pending_only_count,\n    COUNT(*) FILTER (WHERE embedding_status = 'failed')     AS failed_count,\n    COUNT(*) FILTER (WHERE embedding_status = 'processing') AS processing_count,\n    COUNT(*) FILTER (WHERE embedding_status = 'done')       AS done_count,\n    COUNT(*) FILTER (WHERE embedding_status IS NULL)        AS null_count,\n\n    -- 待处理总数（pending + failed）\n    COUNT(*) FILTER (WHERE embedding_status IN ('pending', 'failed')) AS pending_count,\n\n    -- 最近一次 embedding 完成时间\n    MAX(embedded_at) FILTER (WHERE embedding_status = 'done') AS last_embedded_at\n  FROM chat_logs cl\n  WHERE group_id = $1\n    AND msg_id IS NOT NULL\n  GROUP BY group_id\n)\nSELECT\n  group_id,\n  pending_only_count,\n  failed_count,\n  processing_count,\n  done_count,\n  null_count,\n  pending_count,\n  last_embedded_at,\n  CASE\n    WHEN pending_count > 30\n     AND processing_count = 0\n    THEN true\n    ELSE false\n  END AS should_embed\nFROM stats;",
+        "options": {
+          "queryReplacement": "={{\n  [\n    String($input.first().json.group_id)\n  ]\n}}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        144,
+        736
+      ],
+      "id": "732fc3ed-2a90-43b5-bba7-d60158d5cba4",
+      "name": "ChkSumTrig",
+      "notesInFlow": false,
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "current_msg",
+              "type": "object"
+            },
+            {
+              "name": "group_id"
+            },
+            {
+              "name": "search_query"
+            }
+          ]
+        }
+      },
+      "id": "5d2b50a1-83cd-4750-a097-e5bbd5256056",
+      "typeVersion": 1.1,
+      "name": "Search Input",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        0,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://dashscope.aliyuncs.com/compatible-mode/v1/embeddings",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"text-embedding-v4\",\n  \"input\": \"{{ $json.search_query }}\",\n  \"dimensions\": 1024,\n  \"encoding_format\": \"float\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        144,
+        416
+      ],
+      "id": "2157589d-9e24-40f7-b835-4d7fa26331db",
+      "name": "GenVector",
+      "executeOnce": false,
+      "credentials": {
+        "openAiApi": {
+          "id": "r7QNMzkK8NA1SlwA",
+          "name": "Qwen"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const formatted = $('Search Input').item.json;\nconst apiResult = $json.data[0].embedding;\n\nconst embeddingStr = `[${apiResult.join(',')}]`;\n\nreturn {\n  json: {\n    ...formatted,\n    embedding_str: embeddingStr\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        304,
+        368
+      ],
+      "id": "10d87a1b-33a9-4805-a24a-f39a3dae1620",
+      "name": "PrepVector"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n    cl.id,\n    cl.msg_id,\n    cl.group_id,\n    cl.sender_user_id,\n    gm.card_name       AS card_name,\n    gm.group_role      AS user_group_role,\n    gm.special_title   AS user_special_title,\n    u.user_inner_id    AS user_inner_id,\n    u.nickname         AS user_nickname,\n    u.is_bot           AS user_is_bot,\n    cl.msg_type,\n    cl.processed_text,\n    cl.reply_to_msg_id,\n    reply.processed_text   AS reply_text,\n    reply_gm.card_name     AS reply_card_name,\n    reply_gm.group_role    AS reply_group_role,\n    reply_gm.special_title AS reply_special_title,\n    reply_u.user_inner_id  AS reply_user_inner_id,\n    reply_u.nickname       AS reply_nickname,\n    reply_u.is_bot         AS reply_is_bot,\n    cl.is_recalled,\n    cl.recalled_by_user_id,\n    cl.embedding_status,\n    cl.is_inappropriate,\n    cl.sent_at,\n    sim.cosine_similarity\nFROM (\n    SELECT\n        cle.chat_log_id,\n        1 - (cle.embedding <=> ($1)::vector) AS cosine_similarity\n    FROM chat_log_embeddings cle\n    WHERE cle.group_id = $2\n      AND 1 - (cle.embedding <=> ($1)::vector) >= $3\n    ORDER BY cle.embedding <=> ($1)::vector\n    LIMIT 10\n) sim\nJOIN chat_logs cl\n  ON cl.id = sim.chat_log_id\nLEFT JOIN chat_logs reply\n  ON reply.msg_id = cl.reply_to_msg_id\nLEFT JOIN group_members gm\n  ON gm.group_id = cl.group_id\n AND gm.user_id  = cl.sender_user_id\nLEFT JOIN users u\n  ON u.user_id = cl.sender_user_id\nLEFT JOIN group_members reply_gm\n  ON reply_gm.group_id = cl.group_id\n AND reply_gm.user_id  = reply.sender_user_id\nLEFT JOIN users reply_u\n  ON reply_u.user_id = reply.sender_user_id\nORDER BY sim.cosine_similarity DESC;",
+        "options": {
+          "queryReplacement": "={{\n  [\n    $json.embedding_str,\n    $json.group_id,\n    0.6\n  ]\n}}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        432,
+        368
+      ],
+      "id": "4361e384-76d3-479d-8dea-0ab5eb6475dc",
+      "name": "VectorSearch",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "299296dc-3545-4496-9616-09815756212b",
+              "leftValue": "={{ Object.keys($input.first().json).length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        560,
+        368
+      ],
+      "id": "c018ca7d-13fa-42bd-998d-c5ab2f3d8ef0",
+      "name": "Found?"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 获取当前 item 的数据\nconst item = $input.first().json;\n\n// 确保 output 对象存在\nif (!item.retrieved_context || typeof item.retrieved_context !== 'object') {\n  return {\n    json: {\n      status: \"error\",\n      source: \"AddMeta\",\n      message: \"Missing or invalid 'retrieved_context' object\"\n    }\n  };\n}\n\n// 统计消息数量\nconst msgCount = Array.isArray(item.retrieved_context.messages)\n  ? item.retrieved_context.messages.length\n  : 0;\n\n// 添加 meta 字段\nitem.retrieved_context.meta = {\n  source: \"HistorySearchTool\", // 数据来源\n  desc: \"Top-N similar historical messages retrieved for LLM context\",\n  count: msgCount,\n  field_explanation: {\n    messages: {\n      t: \"time label, e.g., '2天前'\",\n      u: \"user id\",\n      n: \"nickname\",\n      c: \"message content\",\n      sim: \"similarity score (0~1)\",\n      from_self: \"boolean, whether sent by the bot itself\"\n    },\n    participants: {\n      id: \"user id\",\n      n: \"nickname\",\n      o: \"other nicknames/aliases\",\n      r: \"role in group (admin/member/owner)\",\n      is_bot: \"boolean\"\n    }\n  }\n};\n\n// 返回修改后的 item\nreturn {\n  json: item\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        304
+      ],
+      "id": "56c4992f-f685-4a3e-9db8-9ec275ebbf07",
+      "name": "AttachMeta"
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date();\nconst items = $input.all().reverse(); // 按时间正序\n\nfunction diffLabel(ms) {\n  const min = Math.floor(ms / 60000);\n  if (min <= 1) return \"刚刚\";\n  if (min <= 5) return \"5分钟前\";\n  if (min <= 10) return \"10分钟前\";\n  if (min <= 30) return \"30分钟前\";\n  const hours = Math.floor(min / 60);\n  if (hours < 24) return `${hours}小时前`;\n  return `${Math.floor(hours / 24)}天前`;\n}\n\nfunction collectNames(card, special, nick) {\n  const arr = [];\n  if (card && card.trim()) arr.push(card.trim());\n  if (special && special.trim()) arr.push(special.trim());\n  if (nick && nick.trim()) arr.push(nick.trim());\n  return arr;\n}\n\n// participants 映射表 { user_inner_id: { id, n, o, r, is_bot } }\nconst participantsMap = {};\nconst messages = [];\n\n// 注册参与者\nfunction registerParticipant(userId, mainName, otherNames, role, isBot) {\n  if (!participantsMap[userId]) {\n    participantsMap[userId] = {\n      id: userId || \"无\",        // user_id\n      n: mainName,              // primary_name\n      o: otherNames,            // other_names\n      r: role || \"无\",           // role\n      is_bot: !!isBot            // 是否机器人\n    };\n  }\n}\n\nfor (const m of items) {\n  const sent = new Date(m.json.sent_at);\n  const label = diffLabel(now - sent);\n\n  const allNames = collectNames(m.json.card_name, m.json.user_special_title, m.json.user_nickname);\n  const mainName = allNames[0] || \"未知用户\";\n  const otherNames = allNames.slice(1);\n  const userId = m.json.user_inner_id;\n\n  // 注册发送人\n  registerParticipant(\n    userId,\n    mainName,\n    otherNames,\n    m.json.user_group_role,\n    m.json.user_is_bot\n  );\n\n  let content = m.json.processed_text || \"[空消息]\";\n\n  if (m.json.msg_type === 'reply' && m.json.reply_text) {\n    const replyAllNames = collectNames(m.json.reply_card_name, m.json.reply_special_title, m.json.reply_nickname);\n    const replyMain = replyAllNames[0] || \"未知用户\";\n    const replyOthers = replyAllNames.slice(1);\n    const replyUserId = m.json.reply_user_inner_id;\n\n    // 注册被回复人\n    registerParticipant(\n      replyUserId,\n      replyMain,\n      replyOthers,\n      m.json.reply_group_role,\n      m.json.reply_is_bot\n    );\n\n    content = `回复 ${replyUserId}: ${m.json.reply_text}\\n${content}`;\n  } else if (m.json.msg_type === 'forward') {\n    content = `转发消息:\\n${content}`;\n  }\n\n  messages.push({\n    u: userId,\n    n: mainName,\n    c: content,\n    sim: Number(m.json.cosine_similarity?.toFixed(3) || 0), // 相似度缩写\n    t: label,\n    from_self: !!m.json.user_is_bot\n  });\n}\n\n// participants 转为数组\nconst participants = Object.values(participantsMap);\n\nreturn [{\n  retrieved_context: {\n    participants, // [{id, n, o, r, is_bot}]\n    messages      // [{u, n, c, sim, t, from_self}]\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        768,
+        304
+      ],
+      "id": "e39c00aa-7aba-4c6e-a5c8-f131cb59ff7f",
+      "name": "FormatLogs"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2d6ee28a-9854-41ac-a806-0c9fba9e4007",
+              "name": "output",
+              "value": "={{ JSON.stringify($json.retrieved_context) }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1024,
+        304
+      ],
+      "id": "e53dc711-2576-481e-bafc-dfc6c5b5396f",
+      "name": "MinifyResult"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"status\": \"error\",\n  \"source\": \"HistorySearchTool\",\n  \"message\": \"Unable to retrieve similar historical messages for context.\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        768,
+        432
+      ],
+      "id": "5aa2e8db-8595-4342-9146-8a7cef3638b3",
+      "name": "ReturnEmpty"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2d6ee28a-9854-41ac-a806-0c9fba9e4007",
+              "name": "output",
+              "value": "={{ JSON.stringify($json) }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        896,
+        432
+      ],
+      "id": "c452387b-3d4c-469b-9974-559e553dd130",
+      "name": "MinifyEmpty"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE chat_logs\nSET embedding_status = 'failed'\nWHERE id = ANY (\n  SELECT jsonb_array_elements_text($1::jsonb)::bigint\n);",
+        "options": {
+          "queryReplacement": "={{ JSON.stringify( $items(\"RetriveEmbedding\").map(item => item.json.id) ) }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        304,
+        512
+      ],
+      "id": "2a3dc3aa-1669-4c0f-88d2-2f8091797da5",
+      "name": "LogError",
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.day.app/REDACTED_BARK_TOKEN",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"body\": {{ JSON.stringify(\"Execution id : \" + $execution.id + \", error: \" + $('GenVector').item.json.error.description) }},\n  \"title\": \"HistorySearchTool Embedding Failed\",\n  \"badge\": 1,\n  \"sound\": \"minuet\",\n  \"icon\": \"https://img.freepik.com/premium-vector/window-operating-system-error-warning-dialog-window-popup-message-with-system-failure-flat-design_812892-54.jpg\",\n  \"group\": \"QQ\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        432,
+        512
+      ],
+      "id": "1b1e3f23-5e97-4e92-b37e-49672d7a52de",
+      "name": "BarkNotify"
+    }
+  ],
+  "connections": {
+    "SetGroupId": {
+      "main": [
+        [
+          {
+            "node": "ChkSumTrig",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ChkSumTrig": {
+      "main": [
+        []
+      ]
+    },
+    "Search Input": {
+      "main": [
+        [
+          {
+            "node": "GenVector",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GenVector": {
+      "main": [
+        [
+          {
+            "node": "PrepVector",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "LogError",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PrepVector": {
+      "main": [
+        [
+          {
+            "node": "VectorSearch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VectorSearch": {
+      "main": [
+        [
+          {
+            "node": "Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Found?": {
+      "main": [
+        [
+          {
+            "node": "FormatLogs",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ReturnEmpty",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AttachMeta": {
+      "main": [
+        [
+          {
+            "node": "MinifyResult",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FormatLogs": {
+      "main": [
+        [
+          {
+            "node": "AttachMeta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ReturnEmpty": {
+      "main": [
+        [
+          {
+            "node": "MinifyEmpty",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LogError": {
+      "main": [
+        [
+          {
+            "node": "BarkNotify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": null,
+  "pinData": {
+    "Search Input": [
+      {
+        "json": {
+          "current_msg": {
+            "current_time": "2025-09-12 17:36",
+            "current_message": {
+              "sender_id": "U001",
+              "sender_name": "REDACTED_NICKNAME_3",
+              "other_nicknames": [
+                "REDACTED_NICKNAME_3",
+                "REDACTED_NICKNAME_7",
+                "REDACTED_NICKNAME_1"
+              ],
+              "user_group_role": "owner",
+              "text": "<@REDACTED_NICKNAME_4> n8n javascript code node中获取时间的代码怎么写？"
+            }
+          },
+          "group_id": "7777777777",
+          "search_query": "牙痛怎么缓解？"
+        }
+      }
+    ]
+  },
+  "versionId": "356bbab0-33b6-44ae-b1e7-5fb0518990b3",
+  "tags": [
+    {
+      "updatedAt": "2025-09-02T03:07:39.232Z",
+      "createdAt": "2025-09-02T03:07:39.232Z",
+      "id": "QPm6Jx9oO3RUCGLx",
+      "name": "ChatBot"
+    }
+  ]
+}

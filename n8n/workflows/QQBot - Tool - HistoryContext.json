@@ -1,0 +1,626 @@
+{
+  "id": "dRquyw23VGCkJjGc",
+  "name": "QQBot - Tool - HistoryContext",
+  "description": null,
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "options": {
+          "responseFormat": "json_object"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        1184,
+        528
+      ],
+      "id": "7fbdd370-8cc0-4fc4-9f67-3a2e75047b61",
+      "name": "DeepSeek Chat Model",
+      "credentials": {
+        "deepSeekApi": {
+          "id": "NnqO5cyPICQm7NBl",
+          "name": "DeepSeek account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"summary\": \"围绕当前消息，群聊此前讨论了《幻塔》新版本玩法、iPhone 16 爆料，以及一次未完成的团购计划。\",\n  \"key_points\": [\n    { \"t\": \"2天前\", \"u\": \"U101\", \"c\": \"推荐了《幻塔》新版本\", \"from_self\": false },\n    { \"t\": \"1天前\", \"u\": \"U102\", \"c\": \"分享了 iPhone 16 的爆料\", \"from_self\": true }\n  ],\n  \"unresolved\": [ \"是否团购数码配件\" ],\n  \"topics\": [\"游戏\", \"数码\"],\n  \"participants\": [\n    { \"id\": \"U101\", \"n\": \"夜雨声烦\", \"o\": [\"夜雨\", \"烦烦\"], \"r\": \"admin\", \"is_bot\": false },\n    { \"id\": \"U102\", \"n\": \"南风知我意\", \"o\": [\"南风\", \"知我意\"], \"r\": \"member\", \"is_bot\": true }\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1328,
+        528
+      ],
+      "id": "aef90a84-6348-457e-bc55-102bbc0516b2",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "current_msg",
+              "type": "object"
+            },
+            {
+              "name": "group_id"
+            },
+            {
+              "name": "history_cutoff_sent_at"
+            }
+          ]
+        }
+      },
+      "id": "c055762a-8fe7-4141-a639-df2372f30060",
+      "typeVersion": 1.1,
+      "name": "ToolTriger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        272,
+        368
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  group_id,\n  COUNT(*) FILTER (WHERE llm_process_status = 'pending') AS pending_count,\n  CASE\n    WHEN COUNT(*) FILTER (WHERE llm_process_status = 'pending') <= 30\n    THEN true\n    ELSE false\n  END AS should_get_prev_summary\nFROM chat_logs\nWHERE group_id = $1\nGROUP BY group_id;",
+        "options": {
+          "queryReplacement": "={{\n  [\n    String($input.first().json.group_id)\n  ]\n}}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        480,
+        288
+      ],
+      "id": "71797eda-40d6-4ce9-8e95-4d7bf9424794",
+      "name": "FetchSumStatus",
+      "notesInFlow": false,
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.should_get_prev_summary }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    },
+                    "id": "43bd369e-8680-4aa0-8c13-f569d016d663"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        608,
+        288
+      ],
+      "id": "dd9460ee-9ddb-48b4-935c-d3933a1aa522",
+      "name": "IsSumRequired"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT *\nFROM chat_summaries\nWHERE group_id = $1\nORDER BY end_time DESC\nLIMIT 1;",
+        "options": {
+          "queryReplacement": "={{\n  [\n    $json.group_id\n  ]\n}}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        736,
+        288
+      ],
+      "id": "b75a3c27-39b6-4484-b0f8-086504e51ec7",
+      "name": "FetchPrevSum",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const record = $input.first().json;\n\nconst chatSummary = {\n  summary: record.summary || \"\",\n  key_points: Array.isArray(record.key_points)\n    ? record.key_points.map(kp => ({\n        t: kp.t,\n        u: kp.u,\n        c: kp.c,\n        from_self: kp.hasOwnProperty(\"from_self\") ? kp.from_self : \"N/A\" // 占位符\n      }))\n    : [],\n  unresolved: Array.isArray(record.unresolved) ? record.unresolved : [],\n  topics: Array.isArray(record.topics) ? record.topics : [],\n  participants: Array.isArray(record.participants)\n    ? record.participants.map(p => ({\n        id: p.id,\n        n: p.n,\n        o: p.o,\n        r: p.r,\n        is_bot: p.hasOwnProperty(\"is_bot\") ? p.is_bot : \"N/A\" // 占位符\n      }))\n    : []\n};\n\nreturn [{ chat_summary: chatSummary }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        864,
+        288
+      ],
+      "id": "665d578c-12e3-4047-90ed-d5070a9c675e",
+      "name": "PrepPrevSum"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH recent AS (\n  SELECT\n    msg_id,\n    group_id,\n    sender_user_id,\n    msg_type,\n    processed_text,\n    reply_to_msg_id,\n    is_recalled,\n    recalled_by_user_id,\n    llm_process_status,\n    is_inappropriate,\n    sent_at\n  FROM chat_logs\n  WHERE group_id = $1\n    -- AND sent_at < $2\n    AND llm_process_status != 'done'\n  ORDER BY sent_at DESC\n  LIMIT 20\n)\nSELECT\n  r.msg_id,\n  r.group_id,\n  r.sender_user_id,\n\n  -- 当前消息发送人的群内信息 + 用户信息\n  gm.card_name         AS card_name,\n  gm.group_role        AS user_group_role,\n  gm.special_title     AS user_special_title,\n  u.user_inner_id      AS user_inner_id,\n  u.nickname           AS user_nickname,\n  u.is_bot             AS user_is_bot,\n\n  r.msg_type,\n  r.processed_text,\n  r.reply_to_msg_id,\n\n  -- 被回复的消息文本\n  reply.processed_text AS reply_text,\n\n  -- 被回复消息发送人的群内信息 + 用户信息\n  reply_gm.card_name       AS reply_card_name,\n  reply_gm.group_role      AS reply_group_role,\n  reply_gm.special_title   AS reply_special_title,\n  reply_u.user_inner_id    AS reply_user_inner_id,\n  reply_u.nickname         AS reply_nickname,\n  reply_u.is_bot           AS reply_is_bot,\n\n  r.is_recalled,\n  r.recalled_by_user_id,\n  r.llm_process_status,\n  r.is_inappropriate,\n  r.sent_at\n\nFROM recent r\nLEFT JOIN chat_logs reply\n  ON reply.msg_id = r.reply_to_msg_id\n\nLEFT JOIN group_members gm\n  ON gm.group_id = r.group_id\n AND gm.user_id  = r.sender_user_id\nLEFT JOIN users u\n  ON u.user_id = r.sender_user_id\n\nLEFT JOIN group_members reply_gm\n  ON reply_gm.group_id = r.group_id\n AND reply_gm.user_id  = reply.sender_user_id\nLEFT JOIN users reply_u\n  ON reply_u.user_id = reply.sender_user_id\n\nORDER BY r.sent_at DESC;",
+        "options": {
+          "queryReplacement": "={{\n  [\n    $json.group_id\n  ]\n}}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        480,
+        432
+      ],
+      "id": "bd5b7104-6aa7-49cd-b1cd-8cd3974c3a20",
+      "name": "FetchNewLogs",
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date();\nconst items = $input.all().reverse(); // 按时间正序\n\nfunction diffLabel(ms) {\n  const min = Math.floor(ms / 60000);\n  if (min <= 1) return \"刚刚\";\n  if (min <= 5) return \"5分钟前\";\n  if (min <= 10) return \"10分钟前\";\n  if (min <= 30) return \"30分钟前\";\n  const hours = Math.floor(min / 60);\n  if (hours < 24) return `${hours}小时前`;\n  return `${Math.floor(hours / 24)}天前`;\n}\n\nfunction collectNames(card, special, nick) {\n  const arr = [];\n  if (card && card.trim()) arr.push(card.trim());\n  if (special && special.trim()) arr.push(special.trim());\n  if (nick && nick.trim()) arr.push(nick.trim());\n  return arr;\n}\n\n// participants 映射表 { user_inner_id: { id, n, o, r, is_bot } }\nconst participantsMap = {};\n\n// 注册参与者\nfunction registerParticipant(userId, mainName, otherNames, role, isBot) {\n  if (!participantsMap[userId]) {\n    participantsMap[userId] = {\n      id: userId || \"无\",        // user_id\n      n: mainName,              // primary_name\n      o: otherNames,            // other_names\n      r: role || \"无\",           // role\n      is_bot: !!isBot            // ✅ 是否机器人\n    };\n  }\n}\n\n// 按时间标签分组的消息\nconst messagesByTime = {};\nlet lastUserId = null;\nlet lastTimeLabel = null;\n\nfor (const m of items) {\n  const sent = new Date(m.json.sent_at);\n  const label = diffLabel(now - sent);\n\n  const allNames = collectNames(m.json.card_name, m.json.user_special_title, m.json.user_nickname);\n  const mainName = allNames[0] || \"未知用户\";\n  const otherNames = allNames.slice(1);\n  const userId = m.json.user_inner_id;\n\n  // 注册发送人\n  registerParticipant(\n    userId,\n    mainName,\n    otherNames,\n    m.json.user_group_role,\n    m.json.user_is_bot // 来自 SQL\n  );\n\n  let content = m.json.processed_text || \"[空消息]\";\n\n  if (m.json.msg_type === 'reply' && m.json.reply_text) {\n    const replyAllNames = collectNames(m.json.reply_card_name, m.json.reply_special_title, m.json.reply_nickname);\n    const replyMain = replyAllNames[0] || \"未知用户\";\n    const replyOthers = replyAllNames.slice(1);\n    const replyUserId = m.json.reply_user_inner_id;\n\n    // 注册被回复人\n    registerParticipant(\n      replyUserId,\n      replyMain,\n      replyOthers,\n      m.json.reply_group_role,\n      m.json.reply_is_bot // 来自 SQL\n    );\n\n    content = `回复 ${replyUserId}: ${m.json.reply_text}\\n${content}`;\n  } else if (m.json.msg_type === 'forward') {\n    content = `转发消息:\\n${content}`;\n  }\n\n  if (!messagesByTime[label]) {\n    messagesByTime[label] = [];\n  }\n\n  // 连续同用户发言合并\n  const lastMsgs = messagesByTime[label];\n  if (lastMsgs.length > 0 && lastUserId === userId && lastTimeLabel === label) {\n    lastMsgs[lastMsgs.length - 1].c += `\\n${content}`;\n  } else {\n    lastMsgs.push({\n      u: userId,\n      c: content,\n      from_self: !!m.json.user_is_bot // ✅ 当前机器人自己发的\n    });\n    lastUserId = userId;\n    lastTimeLabel = label;\n  }\n}\n\n// participants 转为数组\nconst participants = Object.values(participantsMap);\n\nreturn [{\n  history_msg: {\n    participants,   // 数组形式\n    messagesByTime  // { time_label: [{u, c, from_self}, ...] }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        608,
+        432
+      ],
+      "id": "19612b81-8f8b-48d8-b359-bfff67fe4126",
+      "name": "PrepNewLogs"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1056,
+        368
+      ],
+      "id": "ee133d61-b7b5-40fb-b8f3-fe960b004258",
+      "name": "JoinContext"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=chat_summary:\n{{ $json.chat_summary ? JSON.stringify($json.chat_summary) : 'No history summary' }}\n\nhistory_msg:\n{{ $json.history_msg ? JSON.stringify($json.history_msg) : 'No history messages' }}\n\ncurrent_msg:\n{{ $('ToolTriger').item.json.current_msg\n    ? JSON.stringify($('ToolTriger').item.json.current_msg)\n    : 'No current message' }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are a background summarization assistant for a group chat AI Agent.\n\n## Goal\nGiven three JSON inputs:\n1. **chat_summary**: A summary of the entire group chat so far.\n2. **history_msg**: Historical messages grouped by time.\n3. **current_msg**: The current message being processed (most important).\n\nYour task:\n- Identify which parts of `chat_summary` and `history_msg` are directly relevant to `current_msg`.\n- Produce a concise background summary that explains the necessary context for understanding `current_msg`.\n- Remove unrelated or redundant information.\n- Keep the output JSON structure identical to the `chat_summary` format.\n\n## Field explanations\n### chat_summary\n- `summary`: Overall summary of the chat.\n- `key_points`: Array of key events.  \n  - `t`: Time (e.g., \"2天前\")  \n  - `u`: User ID  \n  - `c`: Content text  \n  - `from_self`: Boolean, whether sent by the bot itself\n- `unresolved`: Array of unresolved issues.\n- `topics`: Array of topic tags.\n- `participants`: Array of participant objects.  \n  - `id`: User ID  \n  - `n`: Nickname  \n  - `o`: Other nicknames/aliases  \n  - `r`: Role in group (e.g., \"admin\", \"member\", \"owner\")  \n  - `is_bot`: Boolean\n\n### history_msg\n- `participants`: Same structure as in `chat_summary`.\n- `messagesByTime`: Object keyed by relative time string, value is an array of messages.  \n  - Each message has:  \n    - `u`: User ID  \n    - `c`: Content text  \n    - `from_self`: Boolean\n\n### current_msg\n- `at_me`: Boolean, whether the bot was mentioned.\n- `current_time`: Current timestamp string.\n- `current_message`:  \n  - `sender_id`: User ID  \n  - `sender_name`: Display name  \n  - `other_nicknames`: Array of aliases  \n  - `user_group_role`: Role in group  \n  - `text`: Message text\n\n## Output format\nReturn a single JSON object:\n{\n  \"summary\": \"...\",\n  \"key_points\": [\n    { \"t\": \"<time>\", \"u\": \"<user_id>\", \"c\": \"<content>\", \"from_self\": <true/false> }\n  ],\n  \"unresolved\": [ \"...\", \"...\" ],\n  \"topics\": [ \"...\", \"...\" ],\n  \"participants\": [\n    { \"id\": \"<user_id>\", \"n\": \"<nickname>\", \"o\": [ \"<alias1>\", \"<alias2>\" ], \"r\": \"<role>\", \"is_bot\": <true/false> }\n  ]\n}\n\n## Rules\n- Focus only on information relevant to `current_msg`.\n- Do not invent events or participants not present in the inputs.\n- Preserve original wording when possible, but you may shorten for clarity.\n- If no relevant items exist for a field, return an empty array or empty string.\n- Return only valid JSON, no extra commentary."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        1184,
+        368
+      ],
+      "id": "7e4fa71c-24d4-4644-9f22-4ace9a454941",
+      "name": "GenNewSummary",
+      "alwaysOutputData": false,
+      "notesInFlow": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// 获取当前 item 的数据\nconst item = $input.item.json;\n\n// 确保 output 对象存在\nif (!item.output || typeof item.output !== 'object') {\n  return {\n    json: {\n      status: \"error\",\n      source: \"AddMeta\",\n      message: \"Missing or invalid 'output' object\"\n    }\n  };\n}\n\n// 在 output 内添加 meta 字段\nitem.output.meta = {\n  field_explanation: {\n    t: \"time string, e.g., '2天前'\",\n    u: \"user id\",\n    c: \"message content\",\n    from_self: \"boolean, whether sent by the bot itself\",\n    id: \"user id\",\n    n: \"nickname\",\n    o: \"other nicknames/aliases\",\n    r: \"role in group (e.g., admin, member, owner)\",\n    is_bot: \"boolean\"\n  }\n};\n\n// 返回修改后的 item\nreturn {\n  json: item\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1504,
+        288
+      ],
+      "id": "125d4d16-fc00-41b5-aeed-30ce8822e98d",
+      "name": "AttachMeta"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2d6ee28a-9854-41ac-a806-0c9fba9e4007",
+              "name": "output",
+              "value": "={{ JSON.stringify($json.output) }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1632,
+        288
+      ],
+      "id": "dc6761a3-5feb-4361-b735-4c0331eb2050",
+      "name": "MinifyResult"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.day.app/REDACTED_BARK_TOKEN",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"body\": {{ JSON.stringify(\"Execution id : \" + $execution.id) }},\n  \"title\": \"Tool - HistoryContext - LLM Failed\",\n  \"badge\": 1,\n  \"sound\": \"minuet\",\n  \"icon\": \"https://img.freepik.com/premium-vector/window-operating-system-error-warning-dialog-window-popup-message-with-system-failure-flat-design_812892-54.jpg\",\n  \"group\": \"QQ\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1504,
+        432
+      ],
+      "id": "72fe648c-654f-4656-86af-26138d214603",
+      "name": "BarkNotify"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"status\": \"error\",\n  \"source\": \"HistoryContext\",\n  \"message\": \"Failed to generate background context.\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1632,
+        432
+      ],
+      "id": "966c82a7-c01e-476c-9f8c-905ad92c7793",
+      "name": "ReturnEmpty"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2d6ee28a-9854-41ac-a806-0c9fba9e4007",
+              "name": "output",
+              "value": "={{ JSON.stringify($json) }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1760,
+        432
+      ],
+      "id": "a10f810b-df2e-4b14-b5f1-bc753368330f",
+      "name": "MinifyEmpty"
+    }
+  ],
+  "connections": {
+    "DeepSeek Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "GenNewSummary",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "GenNewSummary",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ToolTriger": {
+      "main": [
+        [
+          {
+            "node": "FetchSumStatus",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "FetchNewLogs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FetchSumStatus": {
+      "main": [
+        [
+          {
+            "node": "IsSumRequired",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IsSumRequired": {
+      "main": [
+        [
+          {
+            "node": "FetchPrevSum",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FetchPrevSum": {
+      "main": [
+        [
+          {
+            "node": "PrepPrevSum",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PrepPrevSum": {
+      "main": [
+        [
+          {
+            "node": "JoinContext",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FetchNewLogs": {
+      "main": [
+        [
+          {
+            "node": "PrepNewLogs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PrepNewLogs": {
+      "main": [
+        [
+          {
+            "node": "JoinContext",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "JoinContext": {
+      "main": [
+        [
+          {
+            "node": "GenNewSummary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GenNewSummary": {
+      "main": [
+        [
+          {
+            "node": "AttachMeta",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "BarkNotify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AttachMeta": {
+      "main": [
+        [
+          {
+            "node": "MinifyResult",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BarkNotify": {
+      "main": [
+        [
+          {
+            "node": "ReturnEmpty",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ReturnEmpty": {
+      "main": [
+        [
+          {
+            "node": "MinifyEmpty",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": null,
+  "pinData": {
+    "ToolTriger": [
+      {
+        "json": {
+          "current_msg": {
+            "current_time": "2025-09-12 17:36",
+            "current_message": {
+              "sender_id": "U001",
+              "sender_name": "REDACTED_NICKNAME_3",
+              "other_nicknames": [
+                "REDACTED_NICKNAME_3",
+                "REDACTED_NICKNAME_7",
+                "REDACTED_NICKNAME_1"
+              ],
+              "user_group_role": "owner",
+              "text": "<@REDACTED_NICKNAME_4> n8n javascript code node中获取时间的代码怎么写？"
+            }
+          },
+          "group_id": "8888888888",
+          "history_cutoff_sent_at": "2025-09-12T17:14:09.415Z"
+        }
+      }
+    ],
+    "GenNewSummary": [
+      {
+        "json": {
+          "output": {
+            "summary": "REDACTED_NICKNAME_3多次询问n8n JavaScript code node中获取当前时间的代码写法，REDACTED_NICKNAME_4已提供建议但尚未完成流程编写。",
+            "key_points": [
+              {
+                "t": "刚刚",
+                "u": "U001",
+                "c": "要求REDACTED_NICKNAME_4提供n8n中JavaScript code node的写法，而非expression",
+                "from_self": false
+              },
+              {
+                "t": "刚刚",
+                "u": "U002",
+                "c": "承诺编写n8n流程以获取当前时间",
+                "from_self": true
+              },
+              {
+                "t": "0小时前",
+                "u": "U001",
+                "c": "询问n8n并请求获取当前时间的code node",
+                "from_self": false
+              },
+              {
+                "t": "0小时前",
+                "u": "U002",
+                "c": "建议使用{{new Date().toISOString()}}并提议编写完整流程",
+                "from_self": true
+              },
+              {
+                "t": "1小时前",
+                "u": "U001",
+                "c": "问候REDACTED_NICKNAME_4并询问n8n",
+                "from_self": false
+              },
+              {
+                "t": "4天前",
+                "u": "U001",
+                "c": "n8n javascript code node中获取时间的代码怎么写？",
+                "from_self": false
+              },
+              {
+                "t": "4天前",
+                "u": "U002",
+                "c": "获取当前时间的代码很简单，用 new Date() 就能搞定，比如： let now = new Date(); return { json: { currentTime: now } };",
+                "from_self": true
+              }
+            ],
+            "unresolved": [
+              "REDACTED_NICKNAME_4尚未完成n8n流程的编写"
+            ],
+            "topics": [
+              "n8n automation",
+              "code assistance"
+            ],
+            "participants": [
+              {
+                "id": "U001",
+                "n": "REDACTED_NICKNAME_3",
+                "o": [
+                  "REDACTED_NICKNAME_7",
+                  "REDACTED_NICKNAME_1"
+                ],
+                "r": "owner",
+                "is_bot": false
+              },
+              {
+                "id": "U002",
+                "n": "REDACTED_NICKNAME_4",
+                "o": [
+                  "REDACTED_NICKNAME_9",
+                  "REDACTED_NICKNAME_3"
+                ],
+                "r": "admin",
+                "is_bot": true
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "versionId": "933600cd-25ca-4d72-b01d-0f499ac632d3",
+  "tags": [
+    {
+      "updatedAt": "2025-09-02T03:07:39.232Z",
+      "createdAt": "2025-09-02T03:07:39.232Z",
+      "id": "QPm6Jx9oO3RUCGLx",
+      "name": "ChatBot"
+    }
+  ]
+}

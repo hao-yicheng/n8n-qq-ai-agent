@@ -1,0 +1,21 @@
+# docker-compose.yml
+services:
+  napcat:
+    image: mlikiowa/napcat-docker:latest
+    container_name: ${NAPCAT_CONTAINER_NAME}
+    restart: always
+    environment:
+      - NAPCAT_UID=${NAPCAT_UID}
+      - NAPCAT_GID=${NAPCAT_GID}
+    ports:
+      - "${NAPCAT_HTTP_PORT}:3000" # http
+      - "${NAPCAT_WEB_PORT}:6099" # web
+    volumes:
+      - ./napcat-data/config:/app/napcat/config
+      - ./napcat-data/qq:/app/.config/QQ
+    networks:
+      - ${DOCKER_NETWORK}
+
+networks:
+  ${DOCKER_NETWORK}:
+    external: true

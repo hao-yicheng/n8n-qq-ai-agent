@@ -1,0 +1,108 @@
+version: "3.8"
+
+services:
+  traefik:
+    image: "traefik"
+    restart: always
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      # The following lines are for enabling HTTPS redirection and Let's Encrypt.
+      # They are commented out as they require a public server with open port 443.
+      # - "--entrypoints.websecure.address=:443"
+      # - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      # - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      # - "--certificatesresolvers.mytlschallenge.acme.tlschallenge=true"
+      # - "--certificatesresolvers.mytlschallenge.acme.email=${SSL_EMAIL}"
+      # - "--certificatesresolvers.mytlschallenge.acme.storage=/letsencrypt/acme.json"
+      - "--accesslog=true"
+    ports:
+      - "80:80"
+      # - "443:443"
+    volumes:
+      - traefik_data:/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - ${DOCKER_NETWORK}
+
+  n8n:
+    container_name: ${N8N_CONTAINER_NAME}
+    build:
+      context: .
+      dockerfile: Dockerfile-n8n
+    restart: always
+    labels:
+      - "traefik.enable=true"
+      # Public domain rule for n8n, using the host from the .env file
+      - "traefik.http.routers.n8n-public.rule=Host(`${N8N_HOST}`)"
+      - "traefik.http.routers.n8n-public.entrypoints=web"
+      # Uncomment the following line to enable Let's Encrypt for the public domain
+      # - "traefik.http.routers.n8n-public.tls.certresolver=mytlschallenge"
+
+      # Service definition for Traefik, pointing to the container's port
+      - "traefik.http.services.n8n.loadbalancer.server.port=5678"
+    environment:
+      # n8n settings sourced from .env file
+      - N8N_HOST=${N8N_HOST}
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=${N8N_PROTOCOL}
+      - NODE_ENV=production
+      # Internal webhook URL, does not need to be changed.
+      - WEBHOOK_URL=http://hyc-n8n:5678/
+      - GENERIC_TIMEZONE=${GENERIC_TIMEZONE}
+      - N8N_BASIC_AUTH_ACTIVE=${N8N_BASIC_AUTH_ACTIVE}
+      - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD}
+      - N8N_TELEMETRY_ENABLED=${N8N_TELEMETRY_ENABLED}
+      - NODE_FUNCTION_ALLOW_EXTERNAL=${NODE_FUNCTION_ALLOW_EXTERNAL}
+
+      # -----------------------------------------------------------------
+      # Database Configuration
+      # The following settings configure n8n to use PostgreSQL.
+      # Comment out this entire block to revert to the default SQLite database.
+      # -----------------------------------------------------------------
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=postgres
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_DATABASE=${POSTGRES_DB}
+      - DB_POSTGRESDB_USER=${POSTGRES_USER}
+      - DB_POSTGRESDB_PASSWORD=${POSTGRES_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./local-files:/files
+    expose:
+      - "5678"
+    networks:
+      - ${DOCKER_NETWORK}
+
+  postgres:
+    image: pgvector/pgvector:pg17
+    container_name: ${POSTGRES_CONTAINER_NAME}
+    restart: always
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ${DOCKER_NETWORK}
+
+volumes:
+  traefik_data:
+  n8n_data:
+  postgres_data:
+
+networks:
+  napcat-n8n-network:
+    external: true

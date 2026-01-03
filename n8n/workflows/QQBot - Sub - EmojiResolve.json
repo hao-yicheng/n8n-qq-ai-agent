@@ -1,0 +1,1212 @@
+{
+  "id": "7bKscfVvy52Kbbfm",
+  "name": "QQBot - Sub - EmojiResolve",
+  "description": null,
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        2176,
+        240
+      ],
+      "id": "5a151788-992c-43a5-9555-be65030ce9f8",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "content": "## QQ Emoji Database Sync\n### Data Sources：\n- MD Format：[GitHub tencent-connect/bot-docs](https://raw.githubusercontent.com/tencent-connect/bot-docs/refs/heads/main/docs/develop/nodesdk/model/emoji.md)\n- JSON Format：[GitHub koishijs QFaces](https://github.com/koishijs/QFace)",
+        "height": 368,
+        "width": 1584,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        912,
+        112
+      ],
+      "id": "af0269f0-33df-425f-93c9-e4bf0db90d3a",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                3
+              ],
+              "triggerAtHour": 5
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        976,
+        240
+      ],
+      "id": "503e23a8-5816-4f94-b4c6-7d327e7026a8",
+      "name": "SyncTrigger"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CREATE TABLE IF NOT EXISTS emojis (\n    type SMALLINT NOT NULL,\n    emoji_id INT PRIMARY KEY,\n    meaning VARCHAR(50) NOT NULL\n);\n\nSELECT COUNT(*) AS emoji_count FROM emojis;\n-- SELECT * FROM emojis;\n-- SELECT tablename FROM pg_tables WHERE schemaname = 'public';\n-- DROP TABLE IF EXISTS emojis;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1104,
+        240
+      ],
+      "id": "372a2243-b219-41cb-b86c-c8361616dc84",
+      "name": "FetchLocalEmojis",
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://raw.githubusercontent.com/tencent-connect/bot-docs/refs/heads/main/docs/develop/nodesdk/model/emoji.md",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1264,
+        176
+      ],
+      "id": "47c295fc-56fe-47b3-a417-f0a9b255f46c",
+      "name": "FetchRemoteMD"
+    },
+    {
+      "parameters": {
+        "jsCode": "const markdownText = $input.first().json.data;\nconst emojiList = [];\n\nconst sectionHeader = '### Emoji 列表';\nconst startIndex = markdownText.indexOf(sectionHeader);\n\nif (startIndex === -1) {\n  return [];\n}\n\nconst relevantText = markdownText.substring(startIndex);\nconst lines = relevantText.split('\\n');\n\nlet isParsing = false;\n\nfor (const line of lines) {\n  // --- 关键修改点 ---\n  // 结合了您的发现和结构化判断，这是最稳健的检查\n  const trimmedLine = line.trim();\n  if (!isParsing && trimmedLine.startsWith('|') && trimmedLine.endsWith('|') && trimmedLine.includes('---')) {\n    isParsing = true;\n    continue;\n  }\n\n  if (!isParsing) {\n    continue;\n  }\n\n  if (!line.includes('|')) {\n    break;\n  }\n\n  const cells = line.split('|').map(cell => cell.trim());\n  \n  if (cells.length >= 4 && cells[1] && cells[2]) {\n    emojiList.push({\n      json: {\n        type: parseInt(cells[1], 10),\n        emoji_id: parseInt(cells[2], 10),\n        meaning: cells[3]\n      }\n    });\n  }\n}\n\nreturn emojiList;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1424,
+        176
+      ],
+      "id": "e59b884a-53d4-47cb-9930-7aafb9c73ce6",
+      "name": "ParseMDtoJSON"
+    },
+    {
+      "parameters": {
+        "url": "https://raw.githubusercontent.com/koishijs/QFace/refs/heads/master/lib/data.json",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1264,
+        304
+      ],
+      "id": "d5d7d315-08a8-4bc5-a50a-eb53dd59d7e0",
+      "name": "FetchRemoteJSON"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e7bdd2cc-6e8c-4006-a24c-73166e89e329",
+              "name": "type",
+              "value": 3,
+              "type": "number"
+            },
+            {
+              "id": "deea6c0b-038f-4cca-8467-3221aed4fd7f",
+              "name": "emoji_id",
+              "value": "={{ Number($json.QSid) }}",
+              "type": "number"
+            },
+            {
+              "id": "de2d8657-c5c5-4622-b42f-29293c95d680",
+              "name": "meaning",
+              "value": "={{ $json.QDes.replace('/', '') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1424,
+        304
+      ],
+      "id": "1a553ecd-f393-4ae2-89fb-fbe570becf07",
+      "name": "FormatLocalData"
+    },
+    {
+      "parameters": {
+        "mode": "combineBySql",
+        "query": "-- 使用 WITH 关键字定义一个名为 combined_emojis 的临时数据集\nWITH combined_emojis AS (\n    \n    -- 第1部分：选择 input1 的全部内容\n    SELECT\n        type,\n        emoji_id,\n        meaning\n    FROM\n        input1\n\n    UNION ALL\n\n    -- 第2部分：使用 LEFT JOIN 找出 input2 中独有的内容\n    SELECT\n        i2.type,\n        i2.emoji_id,\n        i2.meaning\n    FROM\n        input2 AS i2\n        LEFT JOIN input1 AS i1 ON i2.emoji_id = i1.emoji_id\n    WHERE\n        i1.emoji_id IS NULL -- 只保留那些在input1中没有匹配到的行\n)\n\n-- 第3部分：从上面创建的、完整的临时数据集中选择所有数据，并进行排序\nSELECT\n    type,\n    emoji_id,\n    meaning\nFROM\n    combined_emojis\nORDER BY\n    emoji_id ASC;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1584,
+        240
+      ],
+      "id": "00eebb27-6c54-493b-9db8-915e6e8f941a",
+      "name": "MergeEmojiData"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "952aed5c-22d7-4ef0-96ba-ee9a4455220a",
+              "leftValue": "={{ $input.all().length }}",
+              "rightValue": 100,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1872,
+        256
+      ],
+      "id": "dd7b63d2-c1d3-4971-93cd-115b23d40a3a",
+      "name": "ValidateEmojis"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- 第1步：清空表格\nTRUNCATE TABLE emojis RESTART IDENTITY;\n\n-- 第2步：插入新数据\nINSERT INTO emojis (type, emoji_id, meaning)\nSELECT\n    \"type\",\n    \"emoji_id\",\n    \"meaning\"\nFROM\n    -- 关键修正：使用更兼容的函数写法，并对单引号进行转义\n    json_to_recordset('{{ JSON.stringify($input.all().map(function(i) { return i.json; })).replace(/'/g, \"''\") }}') AS x(\"type\" SMALLINT, \"emoji_id\" INT, \"meaning\" VARCHAR(50));",
+        "options": {
+          "queryBatching": "single"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2048,
+        176
+      ],
+      "id": "406210f4-3679-45e3-91ef-623ff8003354",
+      "name": "UpsertEmojiDB",
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "errorMessage": "Failed to fetch online emoji definitions."
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        2048,
+        304
+      ],
+      "id": "f2a9f362-94ec-4335-bd47-9d0eeaed7eab",
+      "name": "HandleSyncError",
+      "alwaysOutputData": false,
+      "retryOnFail": false,
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- TRUNCATE TABLE emojis RESTART IDENTITY;\nSELECT * FROM emojis;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2304,
+        240
+      ],
+      "id": "fb7aa376-31b0-4703-96aa-f868daa8d610",
+      "name": "VerifySync",
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "6ed3a638-5663-4e7e-8785-cecfa630d245",
+      "typeVersion": 1.1,
+      "name": "SubTriger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        976,
+        -160
+      ]
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        1152,
+        -80
+      ],
+      "id": "168dbe6d-0127-4bc2-a3f2-812fd2ed0ae1",
+      "name": "LimitLookup"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- TRUNCATE TABLE emojis RESTART IDENTITY;\nSELECT * FROM emojis;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1296,
+        -80
+      ],
+      "id": "5c27f5c2-e36d-4147-8d99-589150ad266f",
+      "name": "FetchEmojiLibrary",
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "928b80d0-d0c6-4b4b-913d-edda845fb081",
+              "name": "emoji_id",
+              "value": "={{ $json.emoji_id }}",
+              "type": "number"
+            },
+            {
+              "id": "e557435c-8276-431a-9088-a6c71b0cb424",
+              "name": "meaning",
+              "value": "={{ $json.meaning }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1440,
+        -80
+      ],
+      "id": "a661805f-3396-4b5a-9073-0fb3ba2969ba",
+      "name": "PrepEmojiMap"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {
+          "includeUnpaired": true
+        }
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1616,
+        -144
+      ],
+      "id": "f0021a8e-19a6-47e6-a39e-0077771e83e5",
+      "name": "JoinEmojiContext"
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- 辅助函数：专门负责获取表情含义 ---\nfunction getEmojiMeaning(segment, emojiMap) {\n  // 优先从 faceText 获取，并确保它不为空\n  if (segment.data?.raw?.faceText && segment.data.raw.faceText.length > 0) {\n    // 同时清理可能存在的中括号\n    return segment.data.raw.faceText.replace(/[\\[\\]]/g, '');\n  }\n\n  // 如果 faceText 无效，则从 emojiMap 查找\n  const emojiIdToFind = parseInt(segment.data.id, 10);\n  if (emojiMap.has(emojiIdToFind)) {\n    return emojiMap.get(emojiIdToFind);\n  }\n  \n  // 如果都找不到，返回默认值\n  return \"未识别的系统表情\";\n}\n\n\n// --- 主流程 ---\n\n// 第1步：创建高效的表情查找表 (emojiMap) - (逻辑不变)\nconst allItems = $input.all();\nconst emojiMap = new Map();\nallItems.forEach(item => {\n  if (item.json.emoji_id !== undefined && item.json.meaning !== undefined) {\n    emojiMap.set(item.json.emoji_id, item.json.meaning);\n  }\n});\n\n// 第2步：仅筛选message是array的记录\nconst messageItems = allItems.filter(item => Array.isArray(item.json.message));\n\n// 第3步：处理每一条聊天记录\nreturn messageItems.map(item => {\n  const newMessageArray = item.json.message.map(segment => {\n    // 检查是否是 'face' 类型\n    if (segment.type === 'face' && segment.data?.id) {\n      // 调用辅助函数获取含义，使主逻辑非常简洁\n      const meaning = getEmojiMeaning(segment, emojiMap);\n      \n      return {\n        type: \"text\",\n        data: { text: `[系统表情: ${meaning}]` }\n      };\n    }\n    // 如果不是'face'类型，则原样返回\n    return segment;\n  });\n\n  item.json.message = newMessageArray;\n  return item;\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1776,
+        -144
+      ],
+      "id": "f7155054-2d4e-4b16-917b-312a95f3c806",
+      "name": "ResolveEmojiCode",
+      "executeOnce": false,
+      "retryOnFail": false,
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "delete $input.item.json.emoji_id;\ndelete $input.item.json.meaning;\n\nreturn $input.item;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1952,
+        -144
+      ],
+      "id": "02710529-c666-4816-ad77-dad34d5efeb8",
+      "name": "CleanLookupData"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cadd1c41-7b9b-45a0-9b4e-5ecdf4df2f58",
+              "leftValue": "={{ $input.all().length }}",
+              "rightValue": "={{ Number($('FetchLocalEmojis').item.json.emoji_count) }}",
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1728,
+        240
+      ],
+      "id": "887b5897-520a-4a21-aaa4-8b880289061f",
+      "name": "IsCountMatched"
+    }
+  ],
+  "connections": {
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "VerifySync",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SyncTrigger": {
+      "main": [
+        [
+          {
+            "node": "FetchLocalEmojis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FetchLocalEmojis": {
+      "main": [
+        [
+          {
+            "node": "FetchRemoteMD",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "FetchRemoteJSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FetchRemoteMD": {
+      "main": [
+        [
+          {
+            "node": "ParseMDtoJSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ParseMDtoJSON": {
+      "main": [
+        [
+          {
+            "node": "MergeEmojiData",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FetchRemoteJSON": {
+      "main": [
+        [
+          {
+            "node": "FormatLocalData",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FormatLocalData": {
+      "main": [
+        [
+          {
+            "node": "MergeEmojiData",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "MergeEmojiData": {
+      "main": [
+        [
+          {
+            "node": "IsCountMatched",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ValidateEmojis": {
+      "main": [
+        [
+          {
+            "node": "UpsertEmojiDB",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HandleSyncError",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SubTriger": {
+      "main": [
+        [
+          {
+            "node": "LimitLookup",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "JoinEmojiContext",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LimitLookup": {
+      "main": [
+        [
+          {
+            "node": "FetchEmojiLibrary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FetchEmojiLibrary": {
+      "main": [
+        [
+          {
+            "node": "PrepEmojiMap",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PrepEmojiMap": {
+      "main": [
+        [
+          {
+            "node": "JoinEmojiContext",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "JoinEmojiContext": {
+      "main": [
+        [
+          {
+            "node": "ResolveEmojiCode",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ResolveEmojiCode": {
+      "main": [
+        [
+          {
+            "node": "CleanLookupData",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IsCountMatched": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ValidateEmojis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": null,
+  "pinData": {
+    "SubTriger": [
+      {
+        "json": {
+          "order": 0,
+          "level": 0,
+          "sender": "REDACTED_NICKNAME_1",
+          "type": "forward",
+          "message": "[转发的消息:]",
+          "is_container": true
+        }
+      },
+      {
+        "json": {
+          "order": 1,
+          "level": 1,
+          "sender": "REDACTED_NICKNAME_8",
+          "type": "image",
+          "message": [
+            {
+              "type": "image",
+              "data": {
+                "summary": "",
+                "file": "E551A8DEABAD439B74FF63DCFBB281B9.png",
+                "sub_type": 0,
+                "url": "https://multimedia.nt.qq.com.cn/download?appid=1407&fileid=EhRLrfiZ5amLi0JP8GbKdRGcLXpzFhj0khIg_woo66y0t_OWjwMyBHByb2RQgL2jAVoQKPIiYm_GmL8j4n6_E1Yev3oCh0c&rkey=CAQSMADnSQn2gPyAUkMzickGkEewcwMuAHPoUevSvKOxWz3prpfW2yrGjvA3Yz7pbkO8fQ",
+                "file_size": "297332"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "https://www.bilibili.com/video/BV1cZYWzqErg/?spm_id_from=333.1387.favlist.content.click&vd_source=afd75ffbd18e4082cc900655f9b0f517"
+              }
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 2,
+          "level": 1,
+          "sender": "REDACTED_NICKNAME_8",
+          "type": "text",
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "不确定有没有卸载的win+r输入cmd打开命令提示符，复制wusa /uninstall /kb:5063878 提示没安装就是卸载成功了"
+              }
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 3,
+          "level": 1,
+          "sender": "REDACTED_NICKNAME_8",
+          "type": "image",
+          "message": [
+            {
+              "type": "image",
+              "data": {
+                "summary": "",
+                "file": "696ED3F83D567E6D0281B0DE841FCF6E.png",
+                "sub_type": 0,
+                "url": "https://multimedia.nt.qq.com.cn/download?appid=1407&fileid=EhQ1pA1U__5NcnFRkE26_m8hwwAbkhjFjgEg_woo_6S0t_OWjwMyBHByb2RQgL2jAVoQcnuVrPd9dlXsFNssxPuafnoCgoo&rkey=CAQSMADnSQn2gPyAUkMzickGkEewcwMuAHPoUevSvKOxWz3prpfW2yrGjvA3Yz7pbkO8fQ",
+                "file_size": "18245"
+              }
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 4,
+          "level": 1,
+          "sender": "REDACTED_NICKNAME_8",
+          "type": "text",
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "目前明确涉及的系统版本\nWindows 11:\n24H2 KB5063878 (26100.4946)\n23H2 KB5063875 (22621.5768 & 22631.5768)\n\nWindows 10:\n22H2 & 21H2 KB5063709 (19044.6216 & 19045.6216)\n1809 KB5063877 (17763.7678)\n1607 KB5063871 (14393.8330)\nTH1 KB5063889 (10240.21100)"
+              }
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 5,
+          "level": 1,
+          "sender": "REDACTED_NICKNAME_8",
+          "type": "image",
+          "message": [
+            {
+              "type": "image",
+              "data": {
+                "summary": "",
+                "file": "F488D2C6DFDB0DF0DF67550A81F6EDEE.png",
+                "sub_type": 0,
+                "url": "https://multimedia.nt.qq.com.cn/download?appid=1407&fileid=EhSCCjOf54VoeNFe8mc8hOc-3jD37xjh3QQg_wook57Dt_OWjwMyBHByb2RQgL2jAVoQNr0BSWZ_qJks_7u7ml7XdXoCVCs&rkey=CAQSMADnSQn2gPyAUkMzickGkEewcwMuAHPoUevSvKOxWz3prpfW2yrGjvA3Yz7pbkO8fQ",
+                "file_size": "77537"
+              }
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 6,
+          "level": 0,
+          "sender": "REDACTED_NICKNAME_3",
+          "type": "text",
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "害，ok"
+              }
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 7,
+          "level": 0,
+          "sender": "REDACTED_NICKNAME_3",
+          "type": "forward",
+          "message": "[转发的消息:]",
+          "is_container": true
+        }
+      },
+      {
+        "json": {
+          "order": 8,
+          "level": 1,
+          "sender": "REDACTED_NICKNAME_3",
+          "type": "forward",
+          "message": "[转发的消息:]",
+          "is_container": true
+        }
+      },
+      {
+        "json": {
+          "order": 9,
+          "level": 2,
+          "sender": "REDACTED_NICKNAME_3",
+          "type": "text",
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "你好"
+              }
+            },
+            {
+              "type": "face",
+              "data": {
+                "id": "6",
+                "raw": {
+                  "faceIndex": 6,
+                  "faceText": null,
+                  "faceType": 1,
+                  "packId": null,
+                  "stickerId": null,
+                  "sourceType": null,
+                  "stickerType": null,
+                  "resultId": null,
+                  "surpriseId": null,
+                  "randomType": null,
+                  "imageType": null,
+                  "pokeType": null,
+                  "spokeSummary": null,
+                  "doubleHit": null,
+                  "vaspokeId": null,
+                  "vaspokeName": null,
+                  "vaspokeMinver": null,
+                  "pokeStrength": null,
+                  "msgType": null,
+                  "faceBubbleCount": null,
+                  "oldVersionStr": null,
+                  "pokeFlag": null,
+                  "chainCount": null
+                },
+                "resultId": null,
+                "chainCount": null
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "呀"
+              }
+            },
+            {
+              "type": "face",
+              "data": {
+                "id": "63",
+                "raw": {
+                  "faceIndex": 63,
+                  "faceText": null,
+                  "faceType": 1,
+                  "packId": null,
+                  "stickerId": null,
+                  "sourceType": null,
+                  "stickerType": null,
+                  "resultId": null,
+                  "surpriseId": null,
+                  "randomType": null,
+                  "imageType": null,
+                  "pokeType": null,
+                  "spokeSummary": null,
+                  "doubleHit": null,
+                  "vaspokeId": null,
+                  "vaspokeName": null,
+                  "vaspokeMinver": null,
+                  "pokeStrength": null,
+                  "msgType": null,
+                  "faceBubbleCount": null,
+                  "oldVersionStr": null,
+                  "pokeFlag": null,
+                  "chainCount": null
+                },
+                "resultId": null,
+                "chainCount": null
+              }
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 10,
+          "level": 2,
+          "sender": "REDACTED_NICKNAME_1",
+          "type": "text",
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "今天学习任务完成了吗？"
+              }
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 11,
+          "level": 1,
+          "sender": "REDACTED_NICKNAME_1",
+          "type": "reply",
+          "message": [
+            {
+              "type": "reply",
+              "data": {
+                "id": "756918357"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "hi "
+              }
+            },
+            {
+              "type": "face",
+              "data": {
+                "id": "283",
+                "raw": {
+                  "faceIndex": 283,
+                  "faceText": "[狂笑]",
+                  "faceType": 2,
+                  "packId": null,
+                  "stickerId": null,
+                  "sourceType": null,
+                  "stickerType": null,
+                  "resultId": null,
+                  "surpriseId": null,
+                  "randomType": null,
+                  "imageType": null,
+                  "pokeType": null,
+                  "spokeSummary": null,
+                  "doubleHit": null,
+                  "vaspokeId": null,
+                  "vaspokeName": null,
+                  "vaspokeMinver": null,
+                  "pokeStrength": null,
+                  "msgType": null,
+                  "faceBubbleCount": null,
+                  "oldVersionStr": null,
+                  "pokeFlag": null,
+                  "chainCount": null
+                },
+                "resultId": null,
+                "chainCount": null
+              }
+            },
+            {
+              "type": "face",
+              "data": {
+                "id": "307",
+                "raw": {
+                  "faceIndex": 307,
+                  "faceText": "[喵喵]",
+                  "faceType": 2,
+                  "packId": null,
+                  "stickerId": null,
+                  "sourceType": null,
+                  "stickerType": null,
+                  "resultId": null,
+                  "surpriseId": null,
+                  "randomType": null,
+                  "imageType": null,
+                  "pokeType": null,
+                  "spokeSummary": null,
+                  "doubleHit": null,
+                  "vaspokeId": null,
+                  "vaspokeName": null,
+                  "vaspokeMinver": null,
+                  "pokeStrength": null,
+                  "msgType": null,
+                  "faceBubbleCount": null,
+                  "oldVersionStr": null,
+                  "pokeFlag": null,
+                  "chainCount": null
+                },
+                "resultId": null,
+                "chainCount": null
+              }
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 12,
+          "level": 1,
+          "sender": "REDACTED_NICKNAME_1",
+          "type": "forward",
+          "message": "[转发的消息:]",
+          "is_container": true
+        }
+      },
+      {
+        "json": {
+          "order": 13,
+          "level": 2,
+          "sender": "REDACTED_NICKNAME_3",
+          "type": "image",
+          "message": [
+            {
+              "type": "image",
+              "data": {
+                "summary": "[动画表情]",
+                "file": "769CCBE4042B0E956FC7F079322F2438.png",
+                "sub_type": 1,
+                "url": "https://multimedia.nt.qq.com.cn/download?appid=1407&fileid=EhQa665uh0d_P-W6oGCehciHJWLDsBj0nAIg_woonInDt_OWjwMyBHByb2RQgL2jAVoQg3SeaN4S3cx21xiTok-spXoCP04&rkey=CAQSMADnSQn2gPyAUkMzickGkEewcwMuAHPoUevSvKOxWz3prpfW2yrGjvA3Yz7pbkO8fQ",
+                "file_size": "36468"
+              }
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 14,
+          "level": 2,
+          "sender": "REDACTED_NICKNAME_1",
+          "type": "text",
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "呵呵"
+              }
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 15,
+          "level": 2,
+          "sender": "REDACTED_NICKNAME_1",
+          "type": "text",
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "emoji表情😍😘\n小黄脸表情"
+              }
+            },
+            {
+              "type": "face",
+              "data": {
+                "id": "6",
+                "raw": {
+                  "faceIndex": 6,
+                  "faceText": null,
+                  "faceType": 1,
+                  "packId": null,
+                  "stickerId": null,
+                  "sourceType": null,
+                  "stickerType": null,
+                  "resultId": null,
+                  "surpriseId": null,
+                  "randomType": null,
+                  "imageType": null,
+                  "pokeType": null,
+                  "spokeSummary": null,
+                  "doubleHit": null,
+                  "vaspokeId": null,
+                  "vaspokeName": null,
+                  "vaspokeMinver": null,
+                  "pokeStrength": null,
+                  "msgType": null,
+                  "faceBubbleCount": null,
+                  "oldVersionStr": null,
+                  "pokeFlag": null,
+                  "chainCount": null
+                },
+                "resultId": null,
+                "chainCount": null
+              }
+            },
+            {
+              "type": "face",
+              "data": {
+                "id": "293",
+                "raw": {
+                  "faceIndex": 293,
+                  "faceText": "[摸锦鲤]",
+                  "faceType": 2,
+                  "packId": null,
+                  "stickerId": null,
+                  "sourceType": null,
+                  "stickerType": null,
+                  "resultId": null,
+                  "surpriseId": null,
+                  "randomType": null,
+                  "imageType": null,
+                  "pokeType": null,
+                  "spokeSummary": null,
+                  "doubleHit": null,
+                  "vaspokeId": null,
+                  "vaspokeName": null,
+                  "vaspokeMinver": null,
+                  "pokeStrength": null,
+                  "msgType": null,
+                  "faceBubbleCount": null,
+                  "oldVersionStr": null,
+                  "pokeFlag": null,
+                  "chainCount": null
+                },
+                "resultId": null,
+                "chainCount": null
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "\n超级表情"
+              }
+            },
+            {
+              "type": "face",
+              "data": {
+                "id": "317",
+                "raw": {
+                  "faceIndex": 317,
+                  "faceText": "[菜汪]",
+                  "faceType": 2,
+                  "packId": null,
+                  "stickerId": null,
+                  "sourceType": null,
+                  "stickerType": null,
+                  "resultId": null,
+                  "surpriseId": null,
+                  "randomType": null,
+                  "imageType": null,
+                  "pokeType": null,
+                  "spokeSummary": null,
+                  "doubleHit": null,
+                  "vaspokeId": null,
+                  "vaspokeName": null,
+                  "vaspokeMinver": null,
+                  "pokeStrength": null,
+                  "msgType": null,
+                  "faceBubbleCount": null,
+                  "oldVersionStr": null,
+                  "pokeFlag": null,
+                  "chainCount": null
+                },
+                "resultId": null,
+                "chainCount": null
+              }
+            },
+            {
+              "type": "face",
+              "data": {
+                "id": "318",
+                "raw": {
+                  "faceIndex": 318,
+                  "faceText": "[崇拜]",
+                  "faceType": 2,
+                  "packId": null,
+                  "stickerId": null,
+                  "sourceType": null,
+                  "stickerType": null,
+                  "resultId": null,
+                  "surpriseId": null,
+                  "randomType": null,
+                  "imageType": null,
+                  "pokeType": null,
+                  "spokeSummary": null,
+                  "doubleHit": null,
+                  "vaspokeId": null,
+                  "vaspokeName": null,
+                  "vaspokeMinver": null,
+                  "pokeStrength": null,
+                  "msgType": null,
+                  "faceBubbleCount": null,
+                  "oldVersionStr": null,
+                  "pokeFlag": null,
+                  "chainCount": null
+                },
+                "resultId": null,
+                "chainCount": null
+              }
+            }
+          ],
+          "is_container": false
+        }
+      },
+      {
+        "json": {
+          "order": 16,
+          "level": 0,
+          "sender": "REDACTED_NICKNAME_3",
+          "type": "text",
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "[hi]"
+              }
+            }
+          ],
+          "is_container": false
+        }
+      }
+    ]
+  },
+  "versionId": "39be79b5-fd1c-4e73-8406-f04add073806",
+  "tags": [
+    {
+      "updatedAt": "2025-09-02T03:07:39.232Z",
+      "createdAt": "2025-09-02T03:07:39.232Z",
+      "id": "QPm6Jx9oO3RUCGLx",
+      "name": "ChatBot"
+    }
+  ]
+}

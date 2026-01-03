@@ -1,0 +1,521 @@
+{
+  "id": "GZBiGlWEJRxW4utW",
+  "name": "QQBot - Sub - Embedding",
+  "description": null,
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- 删除旧表（会清空数据）\n-- DROP TABLE IF EXISTS chat_log_embeddings CASCADE;\n-- 确保已安装 pgvector 扩展\nCREATE EXTENSION IF NOT EXISTS vector;\n\n-- 创建 embedding 表\nCREATE TABLE chat_log_embeddings (\n    chat_log_id BIGINT PRIMARY KEY REFERENCES chat_logs(id) ON DELETE CASCADE,\n    msg_id TEXT UNIQUE, -- QQ 消息唯一 ID（非 NULL 的情况下唯一）\n    group_id TEXT NOT NULL, -- 群 ID，方便按群过滤\n    embedding vector(1024) NOT NULL, -- 向量维度根据模型调整\n    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP\n);\n\n-- 外键约束（可选，如果 msg_id 在 chat_logs 中唯一且非 NULL）\nALTER TABLE chat_log_embeddings\nADD CONSTRAINT fk_msg_id FOREIGN KEY (msg_id) REFERENCES chat_logs(msg_id) ON DELETE CASCADE;\n\n-- 检索优化索引\n-- 1. 按群过滤 + 向量相似度\nCREATE INDEX idx_embeddings_group_vector\nON chat_log_embeddings USING ivfflat (embedding vector_cosine_ops)\nWITH (lists = 100);\n\n-- 2. 按群快速过滤\nCREATE INDEX idx_embeddings_group_id ON chat_log_embeddings (group_id);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        128,
+        -176
+      ],
+      "id": "8f9fa304-d2cb-459a-8700-9fab2d0c4601",
+      "name": "chat_log_embeddings",
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- SELECT\n--     chat_log_id,\n--     group_id,\n--     msg_id,\n--     (embedding IS NOT NULL) AS has_embedding\n-- FROM chat_log_embeddings\n-- LIMIT 100;\n\nSELECT\n    group_id,\n    COUNT(*) FILTER (WHERE embedding_status = 'pending')    AS pending_only_count,\n    COUNT(*) FILTER (WHERE embedding_status = 'failed')     AS failed_count,\n    COUNT(*) FILTER (WHERE embedding_status = 'processing') AS processing_count,\n    COUNT(*) FILTER (WHERE embedding_status = 'done')       AS done_count,\n    COUNT(*) FILTER (WHERE embedding_status IS NULL)        AS null_count,\n\n    -- 待处理总数（pending + failed）\n    COUNT(*) FILTER (WHERE embedding_status IN ('pending', 'failed')) AS pending_count\nFROM chat_logs\nGROUP BY group_id;\n\n  \n-- SELECT\n--     (cle.embedding IS NOT NULL) AS has_embedding,\n--     cl.id AS chat_log_id,\n--     cl.group_id,\n--     cl.msg_id,\n--     cl.sent_at\n-- FROM chat_logs cl\n-- LEFT JOIN chat_log_embeddings cle\n--     ON cle.chat_log_id = cl.id\n-- WHERE cl.group_id = '8888888888'\n-- ORDER BY cl.sent_at ASC\n-- LIMIT 100;\n\n-- 8888888888\n-- 6666666666\n-- 7777777777",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        416,
+        -176
+      ],
+      "id": "23d5f50b-f6fa-432e-8d6d-0d8937415673",
+      "name": "test",
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a2c532f6-26f5-4421-b4de-2b5b1edca105",
+              "name": "group_id",
+              "value": "7777777777",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        128,
+        160
+      ],
+      "id": "22a204d1-2917-4f3c-af37-c2ff561a043a",
+      "name": "SetGroupId",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        160
+      ],
+      "id": "2506ce3e-d8f7-421d-a16f-a17bb9bd16f0",
+      "name": "Schedule Trigger",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "group_id"
+            }
+          ]
+        }
+      },
+      "id": "225f821f-f49c-4325-b572-595d2ffa2927",
+      "typeVersion": 1.1,
+      "name": "SubTriger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        128,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH stats AS (\n  SELECT\n    group_id,\n    -- 各状态计数\n    COUNT(*) FILTER (WHERE embedding_status = 'pending')    AS pending_only_count,\n    COUNT(*) FILTER (WHERE embedding_status = 'failed')     AS failed_count,\n    COUNT(*) FILTER (WHERE embedding_status = 'processing') AS processing_count,\n    COUNT(*) FILTER (WHERE embedding_status = 'done')       AS done_count,\n    COUNT(*) FILTER (WHERE embedding_status IS NULL)        AS null_count,\n\n    -- 待处理总数（pending + failed）\n    COUNT(*) FILTER (WHERE embedding_status IN ('pending', 'failed')) AS pending_count,\n\n    -- 最近一次 embedding 完成时间\n    MAX(embedded_at) FILTER (WHERE embedding_status = 'done') AS last_embedded_at\n  FROM chat_logs cl\n  WHERE group_id = $1\n    AND msg_id IS NOT NULL\n  GROUP BY group_id\n)\nSELECT\n  group_id,\n  pending_only_count,\n  failed_count,\n  processing_count,\n  done_count,\n  null_count,\n  pending_count,\n  last_embedded_at,\n  CASE\n    WHEN pending_count > 30\n     AND processing_count = 0\n    THEN true\n    ELSE false\n  END AS should_embed\nFROM stats;",
+        "options": {
+          "queryReplacement": "={{\n  [\n    String($input.first().json.group_id)\n  ]\n}}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        272,
+        0
+      ],
+      "id": "204b1563-c1d5-4afc-b454-2230f747d734",
+      "name": "FetchEmbedStatus",
+      "notesInFlow": false,
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.should_embed }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    },
+                    "id": "43bd369e-8680-4aa0-8c13-f569d016d663"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "76fc3d1c-ec7a-4898-95db-d29139774aeb",
+      "name": "IsEmbedNeeded"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH locked AS (\n  UPDATE chat_logs\n  SET embedding_status = 'processing'\n  WHERE id IN (\n    SELECT id\n    FROM chat_logs\n    WHERE group_id = $1\n      AND msg_id IS NOT NULL\n      AND embedding_status IN ('pending', 'failed')\n    ORDER BY sent_at ASC\n    LIMIT 10\n    FOR UPDATE SKIP LOCKED\n  )\n  RETURNING *\n)\nSELECT\n  l.id,\n  l.msg_id,\n  l.group_id,\n  l.sender_user_id,\n  gm.card_name       AS card_name,\n  gm.group_role      AS user_group_role,\n  gm.special_title   AS user_special_title,\n  u.user_inner_id    AS user_inner_id,\n  u.nickname         AS user_nickname,\n  u.is_bot           AS user_is_bot,\n  \n  l.msg_type,\n  l.processed_text,\n  l.reply_to_msg_id,\n  reply.processed_text AS reply_text,\n  reply_gm.card_name     AS reply_card_name,\n  reply_gm.group_role    AS reply_group_role,\n  reply_gm.special_title AS reply_special_title,\n  reply_u.user_inner_id  AS reply_user_inner_id,\n  reply_u.nickname       AS reply_nickname,\n  reply_u.is_bot         AS reply_is_bot,\n  \n  l.is_recalled,\n  l.recalled_by_user_id,\n  l.embedding_status,\n  l.is_inappropriate,\n  l.sent_at\nFROM locked l\nLEFT JOIN chat_logs reply\n  ON reply.msg_id = l.reply_to_msg_id\nLEFT JOIN group_members gm\n  ON gm.group_id = l.group_id\n AND gm.user_id  = l.sender_user_id\nLEFT JOIN users u\n  ON u.user_id = l.sender_user_id\nLEFT JOIN group_members reply_gm\n  ON reply_gm.group_id = l.group_id\n AND reply_gm.user_id  = reply.sender_user_id\nLEFT JOIN users reply_u\n  ON reply_u.user_id = reply.sender_user_id\nORDER BY l.sent_at ASC;",
+        "options": {
+          "queryReplacement": "={{\n  [\n    $json.group_id\n  ]\n}}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        544,
+        0
+      ],
+      "id": "cc563602-c5bb-465c-9311-44ec2c0bfa94",
+      "name": "FetchRawLogs",
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// 权重排序: card_name > special_title > nickname\nfunction collectNames(special, card, nick) {\n  const arr = [];\n  if (card && card.trim() !== '') arr.push(card.trim());\n  if (special && special.trim() !== '') arr.push(special.trim());\n  if (nick && nick.trim() !== '') arr.push(nick.trim());\n  return arr;\n}\n\nconst row = $input.item.json;\n\n// 当前消息发送人名字（按权重排序）\nconst userNames = collectNames(row.user_special_title, row.user_card_name, row.user_nickname);\nconst userNameStr = userNames.length > 0 ? userNames.join('/') : '未知用户';\n\n// 被回复消息发送人名字（按权重排序）\nconst replyNames = collectNames(row.reply_special_title, row.reply_card_name, row.reply_nickname);\nconst replyNameStr = replyNames.length > 0 ? replyNames.join('/') : '未知用户';\n\n// 拼接 embedding 用的文本（结构化标签，减少无关词）\nlet parts = [];\n\n// 当前消息\nparts.push(`[发言人] ${userNameStr}(${row.user_group_role || ''})`);\nif (row.processed_text) {\n  parts.push(`[内容] ${row.processed_text}`);\n}\n\n// 被回复消息\nif (row.reply_to_msg_id) {\n  parts.push(`[回复对象] ${replyNameStr}(${row.reply_group_role || ''})`);\n  parts.push(`[回复内容] ${row.reply_text || '获取消息异常'}`);\n}\n\n// 最终 embedding 文本\nconst embeddingText = parts.join(' | ');\n\n// 输出：保留元数据 + embedding 文本\nreturn {\n  json: {\n    chat_log_id: row.id,\n    group_id: row.group_id,\n    msg_id: row.msg_id,\n    embedding_text: embeddingText\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        0
+      ],
+      "id": "e5474733-19a3-4c54-9a4a-d204423052ff",
+      "name": "FormatLogs"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://dashscope.aliyuncs.com/compatible-mode/v1/embeddings",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"text-embedding-v4\",\n  \"input\": {{ JSON.stringify($input.all().map(item => item.json.embedding_text)) }},\n  \"dimensions\": 1024,\n  \"encoding_format\": \"float\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        800,
+        0
+      ],
+      "id": "aba3eb08-93f0-4363-9411-fb18c7fc3fb6",
+      "name": "GenEmbedding",
+      "executeOnce": true,
+      "credentials": {
+        "openAiApi": {
+          "id": "r7QNMzkK8NA1SlwA",
+          "name": "Qwen"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const formatted = $('FormatLogs').all(); // 原始格式化文本\nconst apiResult = $input.first().json; // HTTP Request 返回的 JSON\n\nreturn formatted.map((item, idx) => {\n  const embeddingStr = `[${apiResult.data[idx].embedding.join(',')}]`;\n  return {\n    json: {\n      ...item.json,          // 保留原来的所有字段\n      embedding_str: embeddingStr\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        -80
+      ],
+      "id": "31330966-984b-4799-b86a-c8f29180b36e",
+      "name": "FormatVector"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO chat_log_embeddings (chat_log_id, group_id, msg_id, embedding)\nVALUES ($1, $2, $3, $4::vector)\nON CONFLICT (chat_log_id) DO UPDATE\nSET\n    group_id   = EXCLUDED.group_id,\n    msg_id     = EXCLUDED.msg_id,\n    embedding  = EXCLUDED.embedding,\n    created_at = CURRENT_TIMESTAMP;",
+        "options": {
+          "queryReplacement": "={{\n  [\n    $json.chat_log_id,\n    $json.group_id,\n    $json.msg_id,\n    $json.embedding_str\n  ]\n}}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1088,
+        -80
+      ],
+      "id": "5f5e02e5-ff30-4dc0-be46-9956ef877572",
+      "name": "SaveEmbedding",
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE chat_logs\nSET embedding_status = 'done'\nWHERE id = ANY (\n  SELECT jsonb_array_elements_text($1::jsonb)::bigint\n);",
+        "options": {
+          "queryReplacement": "={{ JSON.stringify( $items(\"FetchRawLogs\").map(item => item.json.id) ) }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1216,
+        -80
+      ],
+      "id": "295f812e-ca7a-4bdf-8b25-ae7836ff74d5",
+      "name": "MarkAsDone",
+      "executeOnce": true,
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE chat_logs\nSET embedding_status = 'failed'\nWHERE id = ANY (\n  SELECT jsonb_array_elements_text($1::jsonb)::bigint\n);",
+        "options": {
+          "queryReplacement": "={{ JSON.stringify( $items(\"FetchRawLogs\").map(item => item.json.id) ) }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        960,
+        80
+      ],
+      "id": "e77d58d1-714c-42c7-be71-d326c99a1c5a",
+      "name": "MarkAsFail",
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.day.app/REDACTED_BARK_TOKEN",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"body\": {{ JSON.stringify(\"Execution id : \" + $execution.id + \", error: \" + $('GenEmbedding').item.json.error.description) }},\n  \"title\": \"Chat Embedding Failed\",\n  \"badge\": 1,\n  \"sound\": \"minuet\",\n  \"icon\": \"https://img.freepik.com/premium-vector/window-operating-system-error-warning-dialog-window-popup-message-with-system-failure-flat-design_812892-54.jpg\",\n  \"group\": \"QQ\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1088,
+        80
+      ],
+      "id": "e9536088-8f92-48a4-b84a-c45911766de5",
+      "name": "BarkNotify"
+    }
+  ],
+  "connections": {
+    "chat_log_embeddings": {
+      "main": [
+        []
+      ]
+    },
+    "SetGroupId": {
+      "main": [
+        [
+          {
+            "node": "FetchEmbedStatus",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "SetGroupId",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SubTriger": {
+      "main": [
+        [
+          {
+            "node": "FetchEmbedStatus",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FetchEmbedStatus": {
+      "main": [
+        [
+          {
+            "node": "IsEmbedNeeded",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IsEmbedNeeded": {
+      "main": [
+        [
+          {
+            "node": "FetchRawLogs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FetchRawLogs": {
+      "main": [
+        [
+          {
+            "node": "FormatLogs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FormatLogs": {
+      "main": [
+        [
+          {
+            "node": "GenEmbedding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GenEmbedding": {
+      "main": [
+        [
+          {
+            "node": "FormatVector",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "MarkAsFail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FormatVector": {
+      "main": [
+        [
+          {
+            "node": "SaveEmbedding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SaveEmbedding": {
+      "main": [
+        [
+          {
+            "node": "MarkAsDone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MarkAsFail": {
+      "main": [
+        [
+          {
+            "node": "BarkNotify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "Schedule Trigger": [
+      {
+        "json": {
+          "timestamp": "2025-10-13T14:36:33.015+08:00",
+          "Readable date": "October 13th 2025, 2:36:33 pm",
+          "Readable time": "2:36:33 pm",
+          "Day of week": "Monday",
+          "Year": "2025",
+          "Month": "October",
+          "Day of month": "13",
+          "Hour": "14",
+          "Minute": "36",
+          "Second": "33",
+          "Timezone": "Asia/Shanghai (UTC+08:00)"
+        }
+      }
+    ],
+    "SubTriger": [
+      {
+        "json": {
+          "group_id": "6666666666"
+        }
+      }
+    ]
+  },
+  "versionId": "264e8cbc-1c66-4873-827b-4aa0a4f1986b",
+  "tags": [
+    {
+      "updatedAt": "2025-09-02T03:07:39.232Z",
+      "createdAt": "2025-09-02T03:07:39.232Z",
+      "id": "QPm6Jx9oO3RUCGLx",
+      "name": "ChatBot"
+    }
+  ]
+}

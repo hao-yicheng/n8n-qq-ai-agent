@@ -1,0 +1,10 @@
+ARG tag=latest
+FROM n8nio/n8n:$tag
+USER root
+
+# Install additional npm packages
+RUN npm install -g cheerio
+# Install ffmpeg
+RUN apk add --no-cache ffmpeg
+
+USER node

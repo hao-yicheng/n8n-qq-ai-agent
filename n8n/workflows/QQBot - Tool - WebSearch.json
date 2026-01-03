@@ -1,0 +1,664 @@
+{
+  "id": "dVlnmwFzJa25Ky45",
+  "name": "QQBot - Tool - WebSearch",
+  "description": null,
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "options": {
+          "responseFormat": "json_object"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        864,
+        160
+      ],
+      "id": "1e3f7474-3335-4507-b902-7b0e7642e89d",
+      "name": "DeepSeek Chat Model",
+      "credentials": {
+        "deepSeekApi": {
+          "id": "NnqO5cyPICQm7NBl",
+          "name": "DeepSeek account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"answer\": \"南京9月22日的天气为多云转阴，气温22℃至28℃，东北风。\",\n  \"is_sufficient\": true,\n  \"reason\": \"搜索结果提供了完整的天气信息，包括天气状况、气温范围和风向。\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1008,
+        160
+      ],
+      "id": "c420e48a-33b5-4925-b313-3590330fb868",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        1728,
+        160
+      ],
+      "id": "644e6831-1dd6-4635-94ab-0f8c406eb323",
+      "name": "DeepSeek Chat Model1",
+      "credentials": {
+        "deepSeekApi": {
+          "id": "NnqO5cyPICQm7NBl",
+          "name": "DeepSeek account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "query"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        128,
+        0
+      ],
+      "id": "c09588e3-50ef-4531-b09a-cadbfdfb8601",
+      "name": "SearchTrigger"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"host\": \"http://default-2na8.platform-cn-shanghai.opensearch.aliyuncs.com\",\n  \"workspace_name\": \"default\",\n  \"service_id\": \"ops-web-search-001\",\n  \"query\": \"{{ $json.query }}\",\n  \"search_type\":\"summary\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        256,
+        0
+      ],
+      "id": "5e9a66c8-c1b6-4e18-831d-06a53cce5e98",
+      "name": "AliConfig"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.host }}/v3/openapi/workspaces/{{ $json.workspace_name }}/web-search/{{ $json.service_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n  {\n    query: $json.query,\n    query_rewrite: true,\n    top_k: 3,\n    content_type: $json.search_type\n  }\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        384,
+        0
+      ],
+      "id": "36753819-3d42-4528-a05f-41fa0c2a2d7f",
+      "name": "FetchSnippets",
+      "alwaysOutputData": false,
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "2H9a00MbFhsu5giE",
+          "name": "Aliyun Web Search API"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9ef98196-6c98-410c-8a85-d53612e0415f",
+              "leftValue": "={{ $json.result?.search_result[0].snippet }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        560,
+        0
+      ],
+      "id": "c169760c-cb11-41e4-a5d1-a6f5c9eacf01",
+      "name": "CheckApiStatus"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 获取所有输入数据\nconst items = $input.all();\n\n// 由于一次搜索只有一个 item，这里直接取第一个\nconst searchResults = items[0].json.result?.search_result || [];\n\n// 拼接所有 snippet\nconst combinedSnippets = searchResults\n  .map((res, idx) => `Result ${idx + 1}:\\nTitle: ${res.title}\\nSnippet: ${res.snippet}`)\n  .join(\"\\n\\n---\\n\\n\");\n\n// 输出给下一个节点（LLM）\nreturn [\n  {\n    json: {\n      combined_snippets: combinedSnippets,\n      total_results: searchResults.length\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        736,
+        0
+      ],
+      "id": "2ef8f124-a56d-4d36-b819-624513efeb0b",
+      "name": "PrepSnippets"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=User question:\n{{ $('AliConfig').first().json.query }}\n\nSearch results:\n{{ $json.combined_snippets }}\n\nReturn the JSON as specified.",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are an AI assistant that answers the user's question using only the provided web search results.\n\n{{ $now.setZone('Asia/Shanghai').format('yyyy-MM-dd HH:mm') }}\n\nAnswer in the user's language. If the information is insufficient, clearly indicate so. Return ONLY a valid JSON object with:\n- \"answer\": a concise, factual answer based on the search results\n- \"is_sufficient\": true if the answer is complete and reliable, false if more data is needed\n- \"reason\": a brief explanation of why the answer is sufficient or not\nNo other text outside the JSON object."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        864,
+        0
+      ],
+      "id": "a228ba47-ac9c-4bcb-b86f-c40d8b943dfe",
+      "name": "EvaluateInfo"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b40355c4-77ef-462c-9a38-9b22fbfffd88",
+              "leftValue": "={{ $json.output.is_sufficient }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        0
+      ],
+      "id": "39887374-b83d-4767-833c-5158bb055475",
+      "name": "IsInfoEnough"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "21e5a4a3-e005-4515-aa7e-e9694aa6e8e3",
+              "name": "answer",
+              "value": "={{ $json.output.answer }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1296,
+        0
+      ],
+      "id": "f46afe8c-dcc7-472d-ac45-3c39c7d02415",
+      "name": "DraftResponse"
+    },
+    {
+      "parameters": {
+        "jsCode": "const searchResults = $('FetchSnippets').first().json.result?.search_result || [];\n\n// 把每个 link 转成一个新的 item\nreturn searchResults.map(res => {\n  return {\n    json: {\n      link: res.link\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1296,
+        144
+      ],
+      "id": "03f1c062-2284-44cc-b9a4-b9e5aefd75f6",
+      "name": "ExtractURLs"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.link }}",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"User-Agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36\",\n  \"Accept\": \"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\",\n  \"Accept-Language\": \"zh-CN,zh;q=0.9,en;q=0.8\",\n  \"Connection\": \"keep-alive\",\n  \"Upgrade-Insecure-Requests\": \"1\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1424,
+        144
+      ],
+      "id": "114bba53-0f9b-4b65-9caf-ee6f010f3965",
+      "name": "ScrapePages",
+      "alwaysOutputData": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 获取所有输入 item\nconst allItems = $input.all();\n\n// 最大字符数限制\nconst maxLength = 5000;\n\n// 存放所有清洗后的文本\nlet allCleaned = [];\nconst pageStats = [];\n\nallItems.forEach((item, idx) => {\n  const rawHtml = item.json.data ?? item.json.body ?? \"\";\n  const originalLen = typeof rawHtml === 'string' ? rawHtml.length : 0;\n\n  // 去掉 script 和 style\n  let html = rawHtml.replace(/<script[\\s\\S]*?<\\/script>/gi, '')\n                    .replace(/<style[\\s\\S]*?<\\/style>/gi, '');\n\n  // 表格处理：<tr> 换行，<td>/<th> 用制表符分隔\n  html = html.replace(/<\\/tr>/gi, '\\n')\n             .replace(/<\\/t[dh]>/gi, '\\t');\n\n  // 去掉其他 HTML 标签\n  html = html.replace(/<\\/?[^>]+(>|$)/g, '');\n\n  // 压缩多余空白\n  html = html.replace(/\\t+/g, '\\t')\n             .replace(/ +/g, ' ')\n             .replace(/\\n\\s*\\n/g, '\\n')\n             .trim();\n\n  allCleaned.push(`【网页${idx + 1}】\\n${html}`);\n\n  pageStats.push({\n    page: idx + 1,\n    original_length: originalLen,\n    cleaned_length: html.length\n  });\n});\n\n// 拼接所有网页内容\nlet merged = allCleaned.join('\\n\\n');\n\n// 字数限制\nif (merged.length > maxLength) {\n  merged = merged.slice(0, maxLength) + '...';\n}\n\nreturn [\n  {\n    json: {\n      cleaned_text: merged,\n      page_stats: pageStats\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        0
+      ],
+      "id": "4f0196bf-1546-4794-ac82-6a763460d8ea",
+      "name": "ParseContent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Current time: {{ $now.setZone('Asia/Shanghai').format('yyyy-MM-dd HH:mm') }}\n\nUser question:\n{{ $('AliConfig').first().json.query }}\n\nReference insufficient answer:\n{{ $('EvaluateInfo').first().json.output.answer }}\n\nCleaned webpage content:\n{{ $json.cleaned_text }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "={{ $now.setZone('Asia/Shanghai').format('yyyy-MM-dd HH:mm') }}\n\nYou are an AI assistant that answers the user's question using only the provided cleaned webpage content. \nAlways prioritize the cleaned webpage content. \nUse the insufficient answer only as fallback reference if the webpage content does not cover the question. \n\nAnswer in the user's language with a concise, factual response containing all directly relevant details. \nDo not add unrelated openings or closings, speculation, or external information."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        1728,
+        0
+      ],
+      "id": "d1f963d0-a105-4018-acec-52839eb60c93",
+      "name": "DeepAnalyze"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "21e5a4a3-e005-4515-aa7e-e9694aa6e8e3",
+              "name": "answer",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1984,
+        0
+      ],
+      "id": "02fb4592-fac5-4a2a-bfb6-7f86cabab768",
+      "name": "FinalResponse"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $input.all().length === $('ExtractURLs').all().length }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    },
+                    "id": "934a2c6d-6a79-4d06-908d-124ac0d1cdc0"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1600,
+        288
+      ],
+      "id": "fc17ab06-4611-4aca-a488-3f7257e8befe",
+      "name": "CheckFailType"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "21e5a4a3-e005-4515-aa7e-e9694aa6e8e3",
+              "name": "answer",
+              "value": "={{ $('EvaluateInfo').item.json.output.answer }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1984,
+        288
+      ],
+      "id": "17b299fa-f238-40fd-9460-43cea1cb2c70",
+      "name": "FallbackResponse"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.day.app/REDACTED_BARK_TOKEN",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"body\": {{ JSON.stringify(\"Execution id : \" + $execution.id + \", error: \") }},\n  \"title\": \"WebSearchTool - HTTP Request Failed\",\n  \"badge\": 1,\n  \"sound\": \"minuet\",\n  \"icon\": \"https://img.freepik.com/premium-vector/window-operating-system-error-warning-dialog-window-popup-message-with-system-failure-flat-design_812892-54.jpg\",\n  \"group\": \"QQ\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        384,
+        240
+      ],
+      "id": "00fb99e8-565e-44c3-a3a9-e73f3f27083c",
+      "name": "BarkNotify"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.day.app/REDACTED_BARK_TOKEN",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"body\": {{ JSON.stringify(\"Execution id : \" + $execution.id + \", error: \" + $json.message) }},\n  \"title\": \"WebSearchTool - Search API Failed\",\n  \"badge\": 1,\n  \"sound\": \"minuet\",\n  \"icon\": \"https://img.freepik.com/premium-vector/window-operating-system-error-warning-dialog-window-popup-message-with-system-failure-flat-design_812892-54.jpg\",\n  \"group\": \"QQ\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        560,
+        240
+      ],
+      "id": "ff56fc7f-6afe-4bf6-9124-22aea370a8d2",
+      "name": "BarkNotify1"
+    }
+  ],
+  "connections": {
+    "DeepSeek Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "EvaluateInfo",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "EvaluateInfo",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "DeepAnalyze",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SearchTrigger": {
+      "main": [
+        [
+          {
+            "node": "AliConfig",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AliConfig": {
+      "main": [
+        [
+          {
+            "node": "FetchSnippets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FetchSnippets": {
+      "main": [
+        [
+          {
+            "node": "CheckApiStatus",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "BarkNotify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CheckApiStatus": {
+      "main": [
+        [
+          {
+            "node": "PrepSnippets",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "BarkNotify1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PrepSnippets": {
+      "main": [
+        [
+          {
+            "node": "EvaluateInfo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EvaluateInfo": {
+      "main": [
+        [
+          {
+            "node": "IsInfoEnough",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IsInfoEnough": {
+      "main": [
+        [
+          {
+            "node": "DraftResponse",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ExtractURLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ExtractURLs": {
+      "main": [
+        [
+          {
+            "node": "ScrapePages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ScrapePages": {
+      "main": [
+        [
+          {
+            "node": "ParseContent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "CheckFailType",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ParseContent": {
+      "main": [
+        [
+          {
+            "node": "DeepAnalyze",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepAnalyze": {
+      "main": [
+        [
+          {
+            "node": "FinalResponse",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CheckFailType": {
+      "main": [
+        [
+          {
+            "node": "FallbackResponse",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "SearchTrigger": [
+      {
+        "json": {
+          "query": "索尼a7m5相机当前价格 2025"
+        }
+      }
+    ]
+  },
+  "versionId": "d13905cb-ac86-485a-b8b5-7f8a2c31f4f1",
+  "tags": [
+    {
+      "updatedAt": "2025-09-02T03:07:39.232Z",
+      "createdAt": "2025-09-02T03:07:39.232Z",
+      "id": "QPm6Jx9oO3RUCGLx",
+      "name": "ChatBot"
+    }
+  ]
+}

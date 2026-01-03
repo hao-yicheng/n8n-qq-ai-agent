@@ -1,0 +1,2352 @@
+{
+  "id": "7Dzv8JEBGH5mBKyG",
+  "name": "QQBot - Sub - @MessageResolve",
+  "description": null,
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3024,
+        592
+      ],
+      "id": "d5656e04-abbe-49c2-acae-3dd5a16c6644",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "59f6f2b2-af56-499a-890f-cd15e7b542f2",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "ok",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        2832,
+        384
+      ],
+      "id": "e8b9062e-1794-45d7-8f0c-8a89f90191cf",
+      "name": "Filter1"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- TRUNCATE TABLE group_members, users RESTART IDENTITY;\n\n-- DELETE FROM group_members WHERE group_id = '8888888888';\n\nSELECT * FROM users;\n-- SELECT * FROM group_members;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3216,
+        160
+      ],
+      "id": "8efe599f-42f7-43f7-8736-089f533e1289",
+      "name": "Test",
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1296,
+        544
+      ],
+      "id": "14353efc-ade0-4d0c-9037-e96aff54f344",
+      "name": "Mock 1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1296,
+        384
+      ],
+      "id": "d4baccb8-3b0e-4abe-8508-80831d1b8024",
+      "name": "Mock 2",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CREATE TABLE IF NOT EXISTS users (\n    user_id TEXT PRIMARY KEY,\n    nickname TEXT NOT NULL,\n    sex VARCHAR(10), -- 'male', 'female', 'unknown'\n    age INT,\n    area TEXT, -- 用户位置\n    qq_level INT, -- 用户的QQ等级\n    profile JSONB, -- 人物小传\n    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,\n    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2832,
+        160
+      ],
+      "id": "235fb7cc-8999-45a2-9427-002ae12eb570",
+      "name": "Create users DB",
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CREATE TABLE IF NOT EXISTS group_members (\n    user_id TEXT NOT NULL,\n    group_id TEXT NOT NULL,\n    \n    -- 核心群内信息\n    card_name TEXT,\n    group_role VARCHAR(50) NOT NULL,\n    special_title TEXT,\n    member_level INT,\n    \n    -- 时间相关\n    joined_at TIMESTAMPTZ,\n    last_sent_at TIMESTAMPTZ,\n    title_expire_at TIMESTAMPTZ,\n    shut_up_until TIMESTAMPTZ,\n    \n    -- 状态与权限\n    is_unfriendly BOOLEAN DEFAULT FALSE, -- 【保留】此标记特定于群组\n    is_card_changeable BOOLEAN DEFAULT TRUE,\n    is_robot BOOLEAN DEFAULT FALSE,\n\n    -- 复合主键\n    PRIMARY KEY (user_id, group_id)\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3024,
+        160
+      ],
+      "id": "6b06a78e-d574-40d6-9891-4b9c887168a2",
+      "name": "Create group_members DB",
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "c148f7c6-326d-470c-8f76-fc1b92a669ca",
+      "typeVersion": 1.1,
+      "name": "SubTriger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        1296,
+        688
+      ]
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1424,
+        688
+      ],
+      "id": "7b5a7e8a-67b4-48c9-867e-9f75e98d697e",
+      "name": "NoOp"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0a3464dd-00e5-4a3c-878d-39380f9ae577",
+              "leftValue": "={{ $json.message.some(item => item.type == 'at') }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1680,
+        688
+      ],
+      "id": "f4a0a849-a760-475e-a3d9-ec89ae5551df",
+      "name": "Filter@Msg"
+    },
+    {
+      "parameters": {
+        "jsCode": "const indexMapById = {};\n\n$input.all().forEach((item, itemIndex) => {\n  const { message, group_id } = item.json;\n\n  if (Array.isArray(message)) {\n    message.forEach((msg, msgIndex) => {\n      if (msg.type === \"at\" && msg.data?.qq) {\n        const user_id = msg.data.qq;\n        const key = `${user_id}_${group_id}`;\n\n        if (!indexMapById[key]) indexMapById[key] = [];\n        indexMapById[key].push({ itemIndex, msgIndex });\n      }\n    });\n  }\n});\n\nreturn Object.entries(indexMapById).map(([key, indexMap]) => {\n  const [user_id, group_id] = key.split(\"_\");\n  let group_nickname = null;\n  if (user_id == 'all') {\n    group_nickname = '全体成员';\n  }\n  return {\n    json: {\n      user_id,\n      group_id,\n      group_nickname,\n      indexMap\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1840,
+        624
+      ],
+      "id": "1cdd6fc3-1118-49c1-981b-537859a10369",
+      "name": "Index@Msg",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "jsCode": "let order = 0;\nfor (const item of $input.all()) {\n  item.json.msg_order_at = order++;\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1552,
+        688
+      ],
+      "id": "9fa737f0-f6bb-4bca-acef-7528b52769ae",
+      "name": "AddMsgOrder"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e720db51-428f-4d29-ae08-3beabd9e5777",
+              "leftValue": "={{ /^\\d+$/.test($json.user_id) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1968,
+        624
+      ],
+      "id": "fd847355-1682-485c-9ff1-1c4268a5b032",
+      "name": "Filter@All"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "19522509-3472-4602-b62a-a432e556fba8",
+              "leftValue": "={{ $json.group_nickname }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2432,
+        544
+      ],
+      "id": "cc08270f-9ee2-4898-b410-e8389026d29a",
+      "name": "IdentifyUnresolved"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  gm.user_id   AS \"user_id\",\n  gm.group_id  AS \"group_id\",\n  gm.card_name AS \"card_name\",\n  u.nickname   AS \"nickname\"\nFROM group_members gm\nJOIN jsonb_to_recordset($1::jsonb) AS v(user_id text, group_id text)\n  ON gm.user_id = v.user_id \n AND gm.group_id = v.group_id\nLEFT JOIN users u\n  ON u.user_id = gm.user_id;",
+        "options": {
+          "queryBatching": "single",
+          "queryReplacement": "={{ JSON.stringify($input.all().map(item => ({\n  user_id: item.json.user_id,\n  group_id: String(item.json.group_id)\n}))) }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2144,
+        544
+      ],
+      "id": "830ca4f2-4457-4468-b242-c583c6ff0ba9",
+      "name": "FetchNicknames",
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ $json.data }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3024,
+        384
+      ],
+      "id": "c4d60b3e-112f-403e-9791-be99d1f8d46e",
+      "name": "CleanApiResponse"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 获取原始消息（Add msg_order 节点）\nconst originalMsgs = $('Filter@Msg').all().map(item => item.json);\n\n// 获取映射数据（当前节点输入）\nconst mapping = $input.all().map(item => item.json);\n\n// 遍历映射数据，按位置替换消息内容\nmapping.forEach(mapItem => {\n  const nickname = mapItem.group_nickname;\n\n  mapItem.indexMap.forEach(({ itemIndex, msgIndex }) => {\n    const msgObj = originalMsgs[itemIndex];\n    if (!msgObj || !msgObj.message || !msgObj.message[msgIndex]) return;\n\n    const target = msgObj.message[msgIndex];\n\n    if (target.type === 'at') {\n      // 替换为 text 类型，内容为 @昵称\n      msgObj.message[msgIndex] = {\n        type: 'text',\n        data: {\n          text: `<@${nickname}>`\n        }\n      };\n    }\n\n    // 判断是否有人@机器人\n    if (String(mapItem.user_id) == '222222') {\n      msgObj.db_format.at_me = true;\n    }\n  });\n});\n\nreturn originalMsgs;\n// return originalMsgs.map(msg => {\n//   delete msg.db_format;\n//   return msg;\n// });"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3216,
+        608
+      ],
+      "id": "00b86a81-929e-445b-b200-17e75ee54d77",
+      "name": "ReplaceIdWithNames"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3424,
+        688
+      ],
+      "id": "a7a8f4f3-6b2e-4e66-9c15-7109a962b603",
+      "name": "MergeMsg"
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "msg_order_at"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        3552,
+        688
+      ],
+      "id": "904fd0ab-8dbb-4f63-b2c7-1b411e80fddd",
+      "name": "SyncMsgOrder"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Add a new field called 'myNewField' to the JSON of the item\ndelete $json.msg_order_at;\n\nreturn $input.item;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3680,
+        688
+      ],
+      "id": "5763320d-7648-4fad-9b44-02bcf15bd5cb",
+      "name": "CleanOrderData"
+    },
+    {
+      "parameters": {
+        "jsCode": "const dbData = $input.all();\nconst currentInput = dbData.map(item => item.json);\n\nconst prevTableItems = $('Filter@All').all(); // 保留原始 item\nconst prevTable = prevTableItems.map(item => item.json);\n\n// 如果查询全空，直接返回历史节点（保留 item 链接）\nif (Object.keys($input.first().json).length === 0) {\n  return prevTableItems;\n}\n\n// 建一个 Map，加快匹配速度\nconst lookup = new Map();\nfor (const row of currentInput) {\n  const card = row.card_name && row.card_name.trim() !== ''\n    ? row.card_name\n    : row.nickname;\n  lookup.set(`${row.user_id}_${row.group_id}`, card);\n}\n\n// 遍历之前的表，匹配并更新 group_nickname\nconst updated = prevTableItems.map(item => {\n  const row = { ...item.json }; // 拷贝原 json\n  const key = `${row.user_id}_${row.group_id}`;\n  if (lookup.has(key)) {\n    row.group_nickname = lookup.get(key);\n  }\n  return { ...item, json: row }; // 保留原 item 结构\n});\n\nreturn updated;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2288,
+        544
+      ],
+      "id": "2d6341aa-a7c8-4ca2-96ce-acdbaf1031cb",
+      "name": "MapNicknames"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://REDACTED_NAPCAT_HOST/get_group_member_info",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"group_id\": {{ $json.group_id }},\n  \"user_id\": {{ $json.user_id }},\n  \"no_cache\": false\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2624,
+        464
+      ],
+      "id": "ce7c07f3-af72-467d-bf84-bae215677a66",
+      "name": "GetMemberInfo",
+      "executeOnce": false,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "H4DZKWVXFuZ7yaVN",
+          "name": "Header Auth account"
+        },
+        "httpBasicAuth": {
+          "id": "b9ceX0ZUHEzVZKis",
+          "name": "Unnamed credential"
+        },
+        "oneBotApi": {
+          "id": "psDnv6iXxsYQpTiW",
+          "name": "OneBot account"
+        },
+        "httpBearerAuth": {
+          "id": "8VNzGvlwHZa1SKmt",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const napcatItems = $input.all().map(item => item.json);\nconst atMsgTable = $('IdentifyUnresolved').all();\n\nif (napcatItems.length !== atMsgTable.length) {\n  throw new Error('Napcat结果与原始表长度不一致');\n}\n\nconst updatedTable = atMsgTable.map((item, index) => {\n  const napcat = napcatItems[index];\n  const nickname = napcat.status === 'ok'\n    ? (napcat.data?.card?.trim()\n        ? napcat.data.card\n        : napcat.data.nickname)\n    : '[昵称查询异常]';\n\n  return {\n    json: {\n      ...item.json,\n      group_nickname: nickname\n    }\n  };\n});\n\nreturn updatedTable;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2832,
+        528
+      ],
+      "id": "83b02dd8-a7d8-421c-bf89-e75f2ebbcc34",
+      "name": "MapRemoteNames"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3424,
+        384
+      ],
+      "id": "ede6d8fe-2d41-43be-aea8-59f2e41cf99c",
+      "name": "NoOp1"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO group_members (\n  user_id,\n  group_id,\n  card_name,\n  group_role,\n  special_title,\n  member_level,\n  joined_at,\n  last_sent_at,\n  title_expire_at,\n  shut_up_until,\n  is_unfriendly,\n  is_card_changeable,\n  is_robot\n) VALUES (\n  $1, $2, $3, $4, $5, $6,\n  to_timestamp($7),\n  to_timestamp($8),\n  to_timestamp($9),\n  to_timestamp($10),\n  $11, $12, $13\n)\nON CONFLICT (user_id, group_id) DO UPDATE\nSET\n  card_name         = EXCLUDED.card_name,\n  group_role        = EXCLUDED.group_role,\n  special_title     = EXCLUDED.special_title,\n  member_level      = EXCLUDED.member_level,\n  joined_at         = EXCLUDED.joined_at,\n  last_sent_at      = EXCLUDED.last_sent_at,\n  title_expire_at   = EXCLUDED.title_expire_at,\n  shut_up_until     = EXCLUDED.shut_up_until,\n  is_unfriendly     = EXCLUDED.is_unfriendly,\n  is_card_changeable= EXCLUDED.is_card_changeable,\n  is_robot          = EXCLUDED.is_robot;",
+        "options": {
+          "queryReplacement": "={{ [\n  String($json.user_id ?? ''),\n  String($json.group_id ?? ''),\n  $json.card ?? '',\n  $json.role ?? '',\n  $json.title ?? '',\n  Number($json.level ?? 0),\n  Number($json.join_time ?? 0),\n  Number($json.last_sent_time ?? 0),\n  Number($json.title_expire_time ?? 0),\n  Number($json.shut_up_timestamp ?? 0),\n  Boolean($json.unfriendly),\n  Boolean($json.card_changeable),\n  Boolean($json.is_robot)\n] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3216,
+        304
+      ],
+      "id": "b88eba64-29dd-4c31-89a6-dc148228caf0",
+      "name": "UpsertMemberCard",
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH next_id AS (\n    SELECT\n        COALESCE(\n            (\n                SELECT MIN(gap) \n                FROM (\n                    SELECT generate_series(1, COALESCE(MAX(num), 0) + 1) AS gap\n                    FROM (\n                        SELECT CAST(SUBSTRING(user_inner_id FROM 2) AS INT) AS num\n                        FROM users\n                    ) t\n                ) g\n                WHERE gap NOT IN (\n                    SELECT CAST(SUBSTRING(user_inner_id FROM 2) AS INT) FROM users\n                )\n            ),\n            1\n        ) AS num\n)\nINSERT INTO users (\n    user_id,\n    nickname,\n    sex,\n    age,\n    area,\n    qq_level,\n    user_inner_id\n)\nSELECT\n    $1, $2, $3, $4, $5, $6,\n    'U' || LPAD(num::text, 3, '0')\nFROM next_id\nON CONFLICT (user_id) DO UPDATE\nSET\n    nickname = EXCLUDED.nickname,\n    sex = EXCLUDED.sex,\n    age = EXCLUDED.age,\n    area = EXCLUDED.area,\n    qq_level = EXCLUDED.qq_level,\n    updated_at = CURRENT_TIMESTAMP,\n    user_inner_id = COALESCE(\n        users.user_inner_id,  -- 保留已有 ID\n        EXCLUDED.user_inner_id -- 如果为空则用本次生成的\n    );",
+        "options": {
+          "queryReplacement": "={{ [\n  String($json.user_id ?? ''),\n  $json.nickname ?? '',\n  $json.sex ?? '',\n  Number($json.age ?? 0),\n  $json.area ?? '',\n  Number($json.qq_level ?? 0)\n] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3216,
+        464
+      ],
+      "id": "dae1f2a4-2ab7-462d-83bf-34fbcb2ffc69",
+      "name": "UpsertUserProfile",
+      "credentials": {
+        "postgres": {
+          "id": "QY6AIikboNwqUXVX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        1136,
+        464
+      ],
+      "id": "21d38db8-d4e1-43bb-a735-b9547ca34984",
+      "name": "TestTriger"
+    }
+  ],
+  "connections": {
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "ReplaceIdWithNames",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter1": {
+      "main": [
+        [
+          {
+            "node": "CleanApiResponse",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mock 1": {
+      "main": [
+        [
+          {
+            "node": "NoOp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mock 2": {
+      "main": [
+        []
+      ]
+    },
+    "SubTriger": {
+      "main": [
+        [
+          {
+            "node": "NoOp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NoOp": {
+      "main": [
+        [
+          {
+            "node": "AddMsgOrder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter@Msg": {
+      "main": [
+        [
+          {
+            "node": "Index@Msg",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "MergeMsg",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Index@Msg": {
+      "main": [
+        [
+          {
+            "node": "Filter@All",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AddMsgOrder": {
+      "main": [
+        [
+          {
+            "node": "Filter@Msg",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter@All": {
+      "main": [
+        [
+          {
+            "node": "FetchNicknames",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "IdentifyUnresolved": {
+      "main": [
+        [
+          {
+            "node": "GetMemberInfo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "FetchNicknames": {
+      "main": [
+        [
+          {
+            "node": "MapNicknames",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CleanApiResponse": {
+      "main": [
+        [
+          {
+            "node": "UpsertMemberCard",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "UpsertUserProfile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ReplaceIdWithNames": {
+      "main": [
+        [
+          {
+            "node": "MergeMsg",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MergeMsg": {
+      "main": [
+        [
+          {
+            "node": "SyncMsgOrder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SyncMsgOrder": {
+      "main": [
+        [
+          {
+            "node": "CleanOrderData",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MapNicknames": {
+      "main": [
+        [
+          {
+            "node": "IdentifyUnresolved",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetMemberInfo": {
+      "main": [
+        [
+          {
+            "node": "MapRemoteNames",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Filter1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MapRemoteNames": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UpsertMemberCard": {
+      "main": [
+        [
+          {
+            "node": "NoOp1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UpsertUserProfile": {
+      "main": [
+        [
+          {
+            "node": "NoOp1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TestTriger": {
+      "main": [
+        [
+          {
+            "node": "Mock 1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Mock 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": null,
+  "pinData": {
+    "Mock 1": [
+      {
+        "json": {
+          "self_id": 222222,
+          "user_id": 111111,
+          "time": "2025-08-28 06:57:34",
+          "message_id": 1169173698,
+          "message_seq": 1169173698,
+          "real_id": 1169173698,
+          "real_seq": "3844",
+          "message_type": "group",
+          "sender": {
+            "user_id": 111111,
+            "nickname": "REDACTED_NICKNAME_1",
+            "card": "REDACTED_NICKNAME_3",
+            "role": "owner"
+          },
+          "font": 14,
+          "sub_type": "normal",
+          "message": [
+            {
+              "type": "at",
+              "data": {
+                "qq": "222222"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": " 你好"
+              }
+            }
+          ],
+          "message_format": "array",
+          "post_type": "message",
+          "group_id": 8888888888,
+          "db_format": {
+            "send_at": "2025-08-28 06:57:34",
+            "msg_id": 1169173698,
+            "group_id": 8888888888,
+            "user_id": 111111,
+            "msg_type": "message",
+            "reply_to_msg_id": null,
+            "msg": null,
+            "at_me": false,
+            "raw_msg": {
+              "self_id": 222222,
+              "user_id": 111111,
+              "time": 1756364254,
+              "message_id": 1169173698,
+              "message_seq": 1169173698,
+              "real_id": 1169173698,
+              "real_seq": "3844",
+              "message_type": "group",
+              "sender": {
+                "user_id": 111111,
+                "nickname": "REDACTED_NICKNAME_1",
+                "card": "REDACTED_NICKNAME_3",
+                "role": "owner"
+              },
+              "font": 14,
+              "sub_type": "normal",
+              "message": [
+                {
+                  "type": "at",
+                  "data": {
+                    "qq": "222222"
+                  }
+                },
+                {
+                  "type": "text",
+                  "data": {
+                    "text": " 你好"
+                  }
+                }
+              ],
+              "message_format": "array",
+              "post_type": "message",
+              "group_id": 8888888888
+            }
+          }
+        }
+      }
+    ],
+    "Mock 2": [
+      {
+        "json": {
+          "self_id": 222222,
+          "user_id": 111111,
+          "time": "2025-08-24 16:23:03",
+          "message_id": 2099264643,
+          "message_seq": 2099264643,
+          "real_id": 2099264643,
+          "real_seq": "3799",
+          "message_type": "group",
+          "sender": {
+            "user_id": 111111,
+            "nickname": "REDACTED_NICKNAME_1",
+            "card": "REDACTED_NICKNAME_3",
+            "role": "owner"
+          },
+          "font": 14,
+          "sub_type": "normal",
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "[系统表情: 睁眼]"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": " 有人吗"
+              }
+            }
+          ],
+          "message_format": "array",
+          "post_type": "message",
+          "group_id": 8888888888,
+          "db_format": {
+            "send_at": "2025-08-24 16:23:03",
+            "msg_id": 2099264643,
+            "group_id": 8888888888,
+            "user_id": 111111,
+            "msg_type": "message",
+            "reply_to_msg_id": null,
+            "msg": null,
+            "raw_msg": {
+              "self_id": 222222,
+              "user_id": 111111,
+              "time": 1756052583,
+              "message_id": 2099264643,
+              "message_seq": 2099264643,
+              "real_id": 2099264643,
+              "real_seq": "3799",
+              "message_type": "group",
+              "sender": {
+                "user_id": 111111,
+                "nickname": "REDACTED_NICKNAME_1",
+                "card": "REDACTED_NICKNAME_3",
+                "role": "owner"
+              },
+              "font": 14,
+              "sub_type": "normal",
+              "message": [
+                {
+                  "type": "face",
+                  "data": {
+                    "id": "289",
+                    "raw": {
+                      "faceIndex": 289,
+                      "faceText": "[睁眼]",
+                      "faceType": 2,
+                      "packId": null,
+                      "stickerId": null,
+                      "sourceType": null,
+                      "stickerType": null,
+                      "resultId": null,
+                      "surpriseId": null,
+                      "randomType": null,
+                      "imageType": null,
+                      "pokeType": null,
+                      "spokeSummary": null,
+                      "doubleHit": null,
+                      "vaspokeId": null,
+                      "vaspokeName": null,
+                      "vaspokeMinver": null,
+                      "pokeStrength": null,
+                      "msgType": null,
+                      "faceBubbleCount": null,
+                      "oldVersionStr": null,
+                      "pokeFlag": null,
+                      "chainCount": null
+                    },
+                    "resultId": null,
+                    "chainCount": null
+                  }
+                },
+                {
+                  "type": "text",
+                  "data": {
+                    "text": " 有人吗"
+                  }
+                }
+              ],
+              "message_format": "array",
+              "post_type": "message",
+              "group_id": 8888888888
+            }
+          }
+        }
+      }
+    ],
+    "SubTriger": [
+      {
+        "json": {
+          "self_id": 222222,
+          "user_id": 111111,
+          "time": "2025-08-22 07:13:56",
+          "message_id": 933831317,
+          "message_seq": 933831317,
+          "real_id": 933831317,
+          "real_seq": "3784",
+          "message_type": "group",
+          "sender": {
+            "user_id": 111111,
+            "nickname": "REDACTED_NICKNAME_1",
+            "card": "REDACTED_NICKNAME_4",
+            "role": "owner"
+          },
+          "font": 14,
+          "sub_type": "normal",
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "很多的表情：\n-emoji表情😍😘\n-小黄脸表情"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "[系统表情: 害羞]"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "[系统表情: 摸锦鲤]"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "\n-超级表情"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "[系统表情: 菜汪]"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "[系统表情: 崇拜]"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "\n-图片表情\n"
+              }
+            },
+            {
+              "type": "image",
+              "data": {
+                "text": "[表情包 | 内容: 熊猫角色询问‘人呢？’的表情图]"
+              }
+            },
+            {
+              "type": "image",
+              "data": {
+                "text": "[动画表情 | 状态: 加载失败]"
+              }
+            }
+          ],
+          "message_format": "array",
+          "post_type": "message",
+          "group_id": 8888888888,
+          "db_format": {
+            "send_at": "2025-08-22 07:13:56",
+            "msg_id": 933831317,
+            "group_id": 8888888888,
+            "user_id": 111111,
+            "msg_type": "message",
+            "reply_to_msg_id": null,
+            "msg": null,
+            "raw_msg": {
+              "self_id": 222222,
+              "user_id": 111111,
+              "time": 1755846836,
+              "message_id": 933831317,
+              "message_seq": 933831317,
+              "real_id": 933831317,
+              "real_seq": "3784",
+              "message_type": "group",
+              "sender": {
+                "user_id": 111111,
+                "nickname": "REDACTED_NICKNAME_1",
+                "card": "REDACTED_NICKNAME_4",
+                "role": "owner"
+              },
+              "font": 14,
+              "sub_type": "normal",
+              "message": [
+                {
+                  "type": "text",
+                  "data": {
+                    "text": "很多的表情：\n-emoji表情😍😘\n-小黄脸表情"
+                  }
+                },
+                {
+                  "type": "face",
+                  "data": {
+                    "id": "6",
+                    "raw": {
+                      "faceIndex": 6,
+                      "faceText": null,
+                      "faceType": 1,
+                      "packId": null,
+                      "stickerId": null,
+                      "sourceType": null,
+                      "stickerType": null,
+                      "resultId": null,
+                      "surpriseId": null,
+                      "randomType": null,
+                      "imageType": null,
+                      "pokeType": null,
+                      "spokeSummary": null,
+                      "doubleHit": null,
+                      "vaspokeId": null,
+                      "vaspokeName": null,
+                      "vaspokeMinver": null,
+                      "pokeStrength": null,
+                      "msgType": null,
+                      "faceBubbleCount": null,
+                      "oldVersionStr": null,
+                      "pokeFlag": null,
+                      "chainCount": null
+                    },
+                    "resultId": null,
+                    "chainCount": null
+                  }
+                },
+                {
+                  "type": "face",
+                  "data": {
+                    "id": "293",
+                    "raw": {
+                      "faceIndex": 293,
+                      "faceText": "[摸锦鲤]",
+                      "faceType": 2,
+                      "packId": null,
+                      "stickerId": null,
+                      "sourceType": null,
+                      "stickerType": null,
+                      "resultId": null,
+                      "surpriseId": null,
+                      "randomType": null,
+                      "imageType": null,
+                      "pokeType": null,
+                      "spokeSummary": null,
+                      "doubleHit": null,
+                      "vaspokeId": null,
+                      "vaspokeName": null,
+                      "vaspokeMinver": null,
+                      "pokeStrength": null,
+                      "msgType": null,
+                      "faceBubbleCount": null,
+                      "oldVersionStr": null,
+                      "pokeFlag": null,
+                      "chainCount": null
+                    },
+                    "resultId": null,
+                    "chainCount": null
+                  }
+                },
+                {
+                  "type": "text",
+                  "data": {
+                    "text": "\n-超级表情"
+                  }
+                },
+                {
+                  "type": "face",
+                  "data": {
+                    "id": "317",
+                    "raw": {
+                      "faceIndex": 317,
+                      "faceText": "[菜汪]",
+                      "faceType": 2,
+                      "packId": null,
+                      "stickerId": null,
+                      "sourceType": null,
+                      "stickerType": null,
+                      "resultId": null,
+                      "surpriseId": null,
+                      "randomType": null,
+                      "imageType": null,
+                      "pokeType": null,
+                      "spokeSummary": null,
+                      "doubleHit": null,
+                      "vaspokeId": null,
+                      "vaspokeName": null,
+                      "vaspokeMinver": null,
+                      "pokeStrength": null,
+                      "msgType": null,
+                      "faceBubbleCount": null,
+                      "oldVersionStr": null,
+                      "pokeFlag": null,
+                      "chainCount": null
+                    },
+                    "resultId": null,
+                    "chainCount": null
+                  }
+                },
+                {
+                  "type": "face",
+                  "data": {
+                    "id": "318",
+                    "raw": {
+                      "faceIndex": 318,
+                      "faceText": "[崇拜]",
+                      "faceType": 2,
+                      "packId": null,
+                      "stickerId": null,
+                      "sourceType": null,
+                      "stickerType": null,
+                      "resultId": null,
+                      "surpriseId": null,
+                      "randomType": null,
+                      "imageType": null,
+                      "pokeType": null,
+                      "spokeSummary": null,
+                      "doubleHit": null,
+                      "vaspokeId": null,
+                      "vaspokeName": null,
+                      "vaspokeMinver": null,
+                      "pokeStrength": null,
+                      "msgType": null,
+                      "faceBubbleCount": null,
+                      "oldVersionStr": null,
+                      "pokeFlag": null,
+                      "chainCount": null
+                    },
+                    "resultId": null,
+                    "chainCount": null
+                  }
+                },
+                {
+                  "type": "text",
+                  "data": {
+                    "text": "\n-图片表情\n"
+                  }
+                },
+                {
+                  "type": "image",
+                  "data": {
+                    "summary": "[动画表情]",
+                    "file": "769CCBE4042B0E956FC7F079322F2438.png",
+                    "sub_type": 1,
+                    "url": "https://multimedia.nt.qq.com.cn/download?appid=1407&fileid=EhQa665uh0d_P-W6oGCehciHJWLDsBj0nAIg_wooruaRl--djwMyBHByb2RQgL2jAVoQB5jzqRNnwmJQvWhfaoMmnHoC854&rkey=CAQSMLA2CijgY-sauNPu7597Ifqxim_rf--To5-0QvaNQc-bICyInMLpdJqXUc5s9wtU9A",
+                    "file_size": "36468"
+                  }
+                },
+                {
+                  "type": "image",
+                  "data": {
+                    "summary": "[动画表情]",
+                    "file": "B6AD553016EFBCC39433936518A486D1.jpg",
+                    "sub_type": 1,
+                    "url": "https://multimedia.nt.qq.com.cn/download?appid=1407&fileid=EhTzYt8dt136icLgKHkVF7ja8jCBWhi8tSMg_woopJ-Sl--djwMyBHByb2RQgL2jAVoQtsuHCxevFe2xovuXxgSrk3oCvmk&rkey=CAQSMLA2CijgY-sauNPu7597Ifqxim_rf--To7zVCn0H6YZcMqKy3wgjmner7iiAYBXoZQ",
+                    "file_size": "580284"
+                  }
+                }
+              ],
+              "message_format": "array",
+              "post_type": "message",
+              "group_id": 8888888888
+            }
+          }
+        }
+      },
+      {
+        "json": {
+          "self_id": 222222,
+          "user_id": 111111,
+          "time": "2025-08-22 07:18:24",
+          "message_id": 535176081,
+          "message_seq": 535176081,
+          "real_id": 535176081,
+          "real_seq": "3785",
+          "message_type": "group",
+          "sender": {
+            "user_id": 111111,
+            "nickname": "REDACTED_NICKNAME_1",
+            "card": "REDACTED_NICKNAME_4",
+            "role": "owner"
+          },
+          "font": 14,
+          "sub_type": "normal",
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "这"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "[系统表情: 狂笑]"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "条"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "[系统表情: 哦哟]"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "消息我"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "[系统表情: 摸锦鲤]"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "撤回了"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "[系统表情: 害羞]"
+              }
+            }
+          ],
+          "message_format": "array",
+          "post_type": "message",
+          "group_id": 8888888888,
+          "db_format": {
+            "send_at": "2025-08-22 07:18:24",
+            "msg_id": 535176081,
+            "group_id": 8888888888,
+            "user_id": 111111,
+            "msg_type": "message",
+            "reply_to_msg_id": null,
+            "msg": null,
+            "raw_msg": {
+              "self_id": 222222,
+              "user_id": 111111,
+              "time": 1755847104,
+              "message_id": 535176081,
+              "message_seq": 535176081,
+              "real_id": 535176081,
+              "real_seq": "3785",
+              "message_type": "group",
+              "sender": {
+                "user_id": 111111,
+                "nickname": "REDACTED_NICKNAME_1",
+                "card": "REDACTED_NICKNAME_4",
+                "role": "owner"
+              },
+              "font": 14,
+              "sub_type": "normal",
+              "message": [
+                {
+                  "type": "text",
+                  "data": {
+                    "text": "这"
+                  }
+                },
+                {
+                  "type": "face",
+                  "data": {
+                    "id": "283",
+                    "raw": {
+                      "faceIndex": 283,
+                      "faceText": "[狂笑]",
+                      "faceType": 2,
+                      "packId": null,
+                      "stickerId": null,
+                      "sourceType": null,
+                      "stickerType": null,
+                      "resultId": null,
+                      "surpriseId": null,
+                      "randomType": null,
+                      "imageType": null,
+                      "pokeType": null,
+                      "spokeSummary": null,
+                      "doubleHit": null,
+                      "vaspokeId": null,
+                      "vaspokeName": null,
+                      "vaspokeMinver": null,
+                      "pokeStrength": null,
+                      "msgType": null,
+                      "faceBubbleCount": null,
+                      "oldVersionStr": null,
+                      "pokeFlag": null,
+                      "chainCount": null
+                    },
+                    "resultId": null,
+                    "chainCount": null
+                  }
+                },
+                {
+                  "type": "text",
+                  "data": {
+                    "text": "条"
+                  }
+                },
+                {
+                  "type": "face",
+                  "data": {
+                    "id": "266",
+                    "raw": {
+                      "faceIndex": 266,
+                      "faceText": "[哦哟]",
+                      "faceType": 2,
+                      "packId": null,
+                      "stickerId": null,
+                      "sourceType": null,
+                      "stickerType": null,
+                      "resultId": null,
+                      "surpriseId": null,
+                      "randomType": null,
+                      "imageType": null,
+                      "pokeType": null,
+                      "spokeSummary": null,
+                      "doubleHit": null,
+                      "vaspokeId": null,
+                      "vaspokeName": null,
+                      "vaspokeMinver": null,
+                      "pokeStrength": null,
+                      "msgType": null,
+                      "faceBubbleCount": null,
+                      "oldVersionStr": null,
+                      "pokeFlag": null,
+                      "chainCount": null
+                    },
+                    "resultId": null,
+                    "chainCount": null
+                  }
+                },
+                {
+                  "type": "text",
+                  "data": {
+                    "text": "消息我"
+                  }
+                },
+                {
+                  "type": "face",
+                  "data": {
+                    "id": "293",
+                    "raw": {
+                      "faceIndex": 293,
+                      "faceText": "[摸锦鲤]",
+                      "faceType": 2,
+                      "packId": null,
+                      "stickerId": null,
+                      "sourceType": null,
+                      "stickerType": null,
+                      "resultId": null,
+                      "surpriseId": null,
+                      "randomType": null,
+                      "imageType": null,
+                      "pokeType": null,
+                      "spokeSummary": null,
+                      "doubleHit": null,
+                      "vaspokeId": null,
+                      "vaspokeName": null,
+                      "vaspokeMinver": null,
+                      "pokeStrength": null,
+                      "msgType": null,
+                      "faceBubbleCount": null,
+                      "oldVersionStr": null,
+                      "pokeFlag": null,
+                      "chainCount": null
+                    },
+                    "resultId": null,
+                    "chainCount": null
+                  }
+                },
+                {
+                  "type": "text",
+                  "data": {
+                    "text": "撤回了"
+                  }
+                },
+                {
+                  "type": "face",
+                  "data": {
+                    "id": "6",
+                    "raw": {
+                      "faceIndex": 6,
+                      "faceText": null,
+                      "faceType": 1,
+                      "packId": null,
+                      "stickerId": null,
+                      "sourceType": null,
+                      "stickerType": null,
+                      "resultId": null,
+                      "surpriseId": null,
+                      "randomType": null,
+                      "imageType": null,
+                      "pokeType": null,
+                      "spokeSummary": null,
+                      "doubleHit": null,
+                      "vaspokeId": null,
+                      "vaspokeName": null,
+                      "vaspokeMinver": null,
+                      "pokeStrength": null,
+                      "msgType": null,
+                      "faceBubbleCount": null,
+                      "oldVersionStr": null,
+                      "pokeFlag": null,
+                      "chainCount": null
+                    },
+                    "resultId": null,
+                    "chainCount": null
+                  }
+                }
+              ],
+              "message_format": "array",
+              "post_type": "message",
+              "group_id": 8888888888
+            }
+          }
+        }
+      },
+      {
+        "json": {
+          "self_id": 222222,
+          "user_id": 222222,
+          "time": "2025-08-22 07:20:48",
+          "message_id": 1417250533,
+          "message_seq": 1417250533,
+          "real_id": 1417250533,
+          "real_seq": "3786",
+          "message_type": "group",
+          "sender": {
+            "user_id": 222222,
+            "nickname": "REDACTED_NICKNAME_3",
+            "card": "",
+            "role": "admin"
+          },
+          "font": 14,
+          "sub_type": "normal",
+          "message": [
+            {
+              "type": "image",
+              "data": {
+                "text": "[表情包 | 内容: 熊猫头像，文字表达困惑]"
+              }
+            }
+          ],
+          "message_format": "array",
+          "post_type": "message_sent",
+          "message_sent_type": "self",
+          "group_id": 8888888888,
+          "target_id": 8888888888,
+          "db_format": {
+            "send_at": "2025-08-22 07:20:48",
+            "msg_id": 1417250533,
+            "group_id": 8888888888,
+            "user_id": 222222,
+            "msg_type": "message_sent",
+            "reply_to_msg_id": null,
+            "msg": null,
+            "raw_msg": {
+              "self_id": 222222,
+              "user_id": 222222,
+              "time": 1755847248,
+              "message_id": 1417250533,
+              "message_seq": 1417250533,
+              "real_id": 1417250533,
+              "real_seq": "3786",
+              "message_type": "group",
+              "sender": {
+                "user_id": 222222,
+                "nickname": "REDACTED_NICKNAME_3",
+                "card": "",
+                "role": "admin"
+              },
+              "font": 14,
+              "sub_type": "normal",
+              "message": [
+                {
+                  "type": "image",
+                  "data": {
+                    "summary": "",
+                    "file": "BE79F10917B7FBABFC67580F33E1D6BE.png",
+                    "sub_type": 0,
+                    "url": "https://multimedia.nt.qq.com.cn/download?appid=1407&fileid=EhTYFenAnJltOM77atEXHFwl6PyCcBjC5QUg_woo3e7q2_CdjwMyBHByb2RQgL2jAVoQUaRBc4BNqr034N_bD4aplHoCLEA&rkey=CAQSMLA2CijgY-sauNPu7597Ifqxim_rf--To7zVCn0H6YZcMqKy3wgjmner7iiAYBXoZQ",
+                    "file_size": "94914"
+                  }
+                }
+              ],
+              "message_format": "array",
+              "post_type": "message_sent",
+              "message_sent_type": "self",
+              "group_id": 8888888888,
+              "target_id": 8888888888
+            }
+          }
+        }
+      },
+      {
+        "json": {
+          "self_id": 222222,
+          "user_id": 222222,
+          "time": "2025-08-22 07:22:41",
+          "message_id": 1338156968,
+          "message_seq": 1338156968,
+          "real_id": 1338156968,
+          "real_seq": "3787",
+          "message_type": "group",
+          "sender": {
+            "user_id": 222222,
+            "nickname": "REDACTED_NICKNAME_3",
+            "card": "",
+            "role": "admin"
+          },
+          "font": 14,
+          "sub_type": "normal",
+          "message": [
+            {
+              "type": "at",
+              "data": {
+                "qq": "111111"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": " "
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "好啊"
+              }
+            }
+          ],
+          "message_format": "array",
+          "post_type": "message_sent",
+          "message_sent_type": "self",
+          "group_id": 8888888888,
+          "target_id": 8888888888,
+          "db_format": {
+            "send_at": "2025-08-22 07:22:41",
+            "msg_id": 1338156968,
+            "group_id": 8888888888,
+            "user_id": 222222,
+            "msg_type": "message_sent",
+            "reply_to_msg_id": "535176081",
+            "msg": null,
+            "raw_msg": {
+              "self_id": 222222,
+              "user_id": 222222,
+              "time": 1755847361,
+              "message_id": 1338156968,
+              "message_seq": 1338156968,
+              "real_id": 1338156968,
+              "real_seq": "3787",
+              "message_type": "group",
+              "sender": {
+                "user_id": 222222,
+                "nickname": "REDACTED_NICKNAME_3",
+                "card": "",
+                "role": "admin"
+              },
+              "font": 14,
+              "sub_type": "normal",
+              "message": [
+                {
+                  "type": "reply",
+                  "data": {
+                    "id": "535176081"
+                  }
+                },
+                {
+                  "type": "at",
+                  "data": {
+                    "qq": "111111"
+                  }
+                },
+                {
+                  "type": "text",
+                  "data": {
+                    "text": " "
+                  }
+                },
+                {
+                  "type": "text",
+                  "data": {
+                    "text": "好啊"
+                  }
+                }
+              ],
+              "message_format": "array",
+              "post_type": "message_sent",
+              "message_sent_type": "self",
+              "group_id": 8888888888,
+              "target_id": 8888888888
+            }
+          }
+        }
+      },
+      {
+        "json": {
+          "self_id": 222222,
+          "user_id": 111111,
+          "time": "2025-08-22 07:24:09",
+          "message_id": 1750148131,
+          "message_seq": 1750148131,
+          "real_id": 1750148131,
+          "real_seq": "3788",
+          "message_type": "group",
+          "sender": {
+            "user_id": 111111,
+            "nickname": "REDACTED_NICKNAME_1",
+            "card": "REDACTED_NICKNAME_4",
+            "role": "owner"
+          },
+          "font": 14,
+          "sub_type": "normal",
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "REDACTED_NICKNAME_7你在干啥"
+              }
+            },
+            {
+              "type": "at",
+              "data": {
+                "qq": "222222"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": " 所有人安静安静"
+              }
+            },
+            {
+              "type": "at",
+              "data": {
+                "qq": "all"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": " "
+              }
+            }
+          ],
+          "message_format": "array",
+          "post_type": "message",
+          "group_id": 8888888888,
+          "db_format": {
+            "send_at": "2025-08-22 07:24:09",
+            "msg_id": 1750148131,
+            "group_id": 8888888888,
+            "user_id": 111111,
+            "msg_type": "message",
+            "reply_to_msg_id": null,
+            "msg": null,
+            "raw_msg": {
+              "self_id": 222222,
+              "user_id": 111111,
+              "time": 1755847449,
+              "message_id": 1750148131,
+              "message_seq": 1750148131,
+              "real_id": 1750148131,
+              "real_seq": "3788",
+              "message_type": "group",
+              "sender": {
+                "user_id": 111111,
+                "nickname": "REDACTED_NICKNAME_1",
+                "card": "REDACTED_NICKNAME_4",
+                "role": "owner"
+              },
+              "font": 14,
+              "sub_type": "normal",
+              "message": [
+                {
+                  "type": "text",
+                  "data": {
+                    "text": "REDACTED_NICKNAME_7你在干啥"
+                  }
+                },
+                {
+                  "type": "at",
+                  "data": {
+                    "qq": "222222"
+                  }
+                },
+                {
+                  "type": "text",
+                  "data": {
+                    "text": " 所有人安静安静"
+                  }
+                },
+                {
+                  "type": "at",
+                  "data": {
+                    "qq": "all"
+                  }
+                },
+                {
+                  "type": "text",
+                  "data": {
+                    "text": " "
+                  }
+                }
+              ],
+              "message_format": "array",
+              "post_type": "message",
+              "group_id": 8888888888
+            }
+          }
+        }
+      },
+      {
+        "json": {
+          "self_id": 222222,
+          "user_id": 222222,
+          "time": "2025-08-22 07:41:33",
+          "message_id": 1341917659,
+          "message_seq": 1341917659,
+          "real_id": 1341917659,
+          "real_seq": "3790",
+          "message_type": "group",
+          "sender": {
+            "user_id": 222222,
+            "nickname": "REDACTED_NICKNAME_3",
+            "card": "",
+            "role": "admin"
+          },
+          "font": 14,
+          "sub_type": "normal",
+          "message": [
+            {
+              "type": "json",
+              "data": {
+                "data": "{\"app\":\"com.tencent.tuwen.lua\",\"bizsrc\":\"qqconnect.sdkshare\",\"config\":{\"ctime\":1755848492,\"forward\":1,\"token\":\"abf23e006ee7e73701df61216e8986e7\",\"type\":\"normal\"},\"extra\":{\"app_type\":1,\"appid\":1103188687,\"uin\":222222},\"meta\":{\"news\":{\"app_type\":1,\"appid\":1103188687,\"ctime\":1755848492,\"desc\":\"12306回应称，高铁动车这类列车，出于安全考虑，目前不可能加挂“吸烟列车”。\",\"jumpUrl\":\"https://mp.weixin.qq.com/s?__biz=MzI2NDk5NzA0Mw==&mid=2248854508&idx=1&sn=66142f44048f17579786e95dffbaad78&chksm=e839f3a40cdb7086b2b163fe8174cf770e08d00d618e4e9c5858976371a6d92e4e48d43c8ade&mpshare=1&scene=23&srcid=0822tA0Sli9Kgbn5PWYZdv2N&sharer_shareinfo=43550ba1d066aaf8693c960b9a760bf7&sharer_shareinfo_first=43550ba1d066aaf8693c960b9a760bf7#rd\",\"preview\":\"https://mmbiz.qpic.cn/mmbiz_jpg/QicyPhNHD5vY0A0KS9vJ9baFXxTw6eJhpw2UZE5S5cibTV4pQgbQURVmnQpmCuWUUX0IqtCufRsB7iaVTy5VoPfYA/300?wx_fmt=jpeg&wxfrom=7\",\"tag\":\"微信\",\"tagIcon\":\"https://p.qpic.cn/qqconnect/0/app_1103188687_1658800746/100?max-age=2592000&t=0\",\"title\":\"8点1氪：12306回应高铁能否加挂吸烟车厢；官方通报50升…\",\"uin\":222222}},\"prompt\":\"[分享]8点1氪：12306回应高铁能否加挂吸烟车厢；官方通报50升…\",\"ver\":\"0.0.0.1\",\"view\":\"news\"}"
+              }
+            }
+          ],
+          "message_format": "array",
+          "post_type": "message_sent",
+          "message_sent_type": "self",
+          "group_id": 8888888888,
+          "target_id": 8888888888,
+          "db_format": {
+            "send_at": "2025-08-22 07:41:33",
+            "msg_id": 1341917659,
+            "group_id": 8888888888,
+            "user_id": 222222,
+            "msg_type": "message_sent",
+            "reply_to_msg_id": null,
+            "msg": null,
+            "raw_msg": {
+              "self_id": 222222,
+              "user_id": 222222,
+              "time": 1755848493,
+              "message_id": 1341917659,
+              "message_seq": 1341917659,
+              "real_id": 1341917659,
+              "real_seq": "3790",
+              "message_type": "group",
+              "sender": {
+                "user_id": 222222,
+                "nickname": "REDACTED_NICKNAME_3",
+                "card": "",
+                "role": "admin"
+              },
+              "font": 14,
+              "sub_type": "normal",
+              "message": [
+                {
+                  "type": "json",
+                  "data": {
+                    "data": "{\"app\":\"com.tencent.tuwen.lua\",\"bizsrc\":\"qqconnect.sdkshare\",\"config\":{\"ctime\":1755848492,\"forward\":1,\"token\":\"abf23e006ee7e73701df61216e8986e7\",\"type\":\"normal\"},\"extra\":{\"app_type\":1,\"appid\":1103188687,\"uin\":222222},\"meta\":{\"news\":{\"app_type\":1,\"appid\":1103188687,\"ctime\":1755848492,\"desc\":\"12306回应称，高铁动车这类列车，出于安全考虑，目前不可能加挂“吸烟列车”。\",\"jumpUrl\":\"https://mp.weixin.qq.com/s?__biz=MzI2NDk5NzA0Mw==&mid=2248854508&idx=1&sn=66142f44048f17579786e95dffbaad78&chksm=e839f3a40cdb7086b2b163fe8174cf770e08d00d618e4e9c5858976371a6d92e4e48d43c8ade&mpshare=1&scene=23&srcid=0822tA0Sli9Kgbn5PWYZdv2N&sharer_shareinfo=43550ba1d066aaf8693c960b9a760bf7&sharer_shareinfo_first=43550ba1d066aaf8693c960b9a760bf7#rd\",\"preview\":\"https://mmbiz.qpic.cn/mmbiz_jpg/QicyPhNHD5vY0A0KS9vJ9baFXxTw6eJhpw2UZE5S5cibTV4pQgbQURVmnQpmCuWUUX0IqtCufRsB7iaVTy5VoPfYA/300?wx_fmt=jpeg&wxfrom=7\",\"tag\":\"微信\",\"tagIcon\":\"https://p.qpic.cn/qqconnect/0/app_1103188687_1658800746/100?max-age=2592000&t=0\",\"title\":\"8点1氪：12306回应高铁能否加挂吸烟车厢；官方通报50升…\",\"uin\":222222}},\"prompt\":\"[分享]8点1氪：12306回应高铁能否加挂吸烟车厢；官方通报50升…\",\"ver\":\"0.0.0.1\",\"view\":\"news\"}"
+                  }
+                }
+              ],
+              "message_format": "array",
+              "post_type": "message_sent",
+              "message_sent_type": "self",
+              "group_id": 8888888888,
+              "target_id": 8888888888
+            }
+          }
+        }
+      },
+      {
+        "json": {
+          "self_id": 222222,
+          "user_id": 222222,
+          "time": "2025-08-22 08:02:20",
+          "message_id": 1539411858,
+          "message_seq": 1539411858,
+          "real_id": 1539411858,
+          "real_seq": "3791",
+          "message_type": "group",
+          "sender": {
+            "user_id": 222222,
+            "nickname": "REDACTED_NICKNAME_3",
+            "card": "",
+            "role": "admin"
+          },
+          "font": 14,
+          "sub_type": "normal",
+          "message": [
+            {
+              "type": "json",
+              "data": {
+                "data": "{\"app\":\"com.tencent.tuwen.lua\",\"bizsrc\":\"qqconnect.sdkshare\",\"config\":{\"ctime\":1755849739,\"forward\":1,\"token\":\"f4a8b1110b9c924f4dcaf4f7e11f1a47\",\"type\":\"normal\"},\"extra\":{\"app_type\":1,\"appid\":100507190,\"uin\":222222},\"meta\":{\"news\":{\"app_type\":1,\"appid\":100507190,\"ctime\":1755849739,\"desc\":\"机械翻转磁力屏，其工作原理是利用磁场对磁性物体的作用来实现像素的翻转显示。 磁力…\",\"jumpUrl\":\"https://www.xiaohongshu.com/discovery/item/689dbf65000000001c0078df?app_platform=ios&app_version=8.97&share_from_user_hidden=true&xsec_source=app_share&type=video&xsec_token=CBL_O0H6hlNz7byF0IW5IcHTnQ2fAMekJOp-6pJo6ksR0=&author_share=1&xhsshare=QQ&shareRedId=ODY7QUg6NEA2NzUyOTgwNjY0OThHSjw7&apptime=1755849737&share_id=f3eadbecd4e443cd8875f3318f2b2025\",\"preview\":\"https://pic.ugcimg.cn/f1566184702b020c1744ac15747af06c/jpg1\",\"tag\":\"小红书\",\"tagIcon\":\"https://open.gtimg.cn/open/app_icon/00/50/71/90/100507190_100_m.png?t=1755575996\",\"title\":\"什么是磁力屏\",\"uin\":222222}},\"prompt\":\"[分享]什么是磁力屏\",\"ver\":\"0.0.0.1\",\"view\":\"news\"}"
+              }
+            }
+          ],
+          "message_format": "array",
+          "post_type": "message_sent",
+          "message_sent_type": "self",
+          "group_id": 8888888888,
+          "target_id": 8888888888,
+          "db_format": {
+            "send_at": "2025-08-22 08:02:20",
+            "msg_id": 1539411858,
+            "group_id": 8888888888,
+            "user_id": 222222,
+            "msg_type": "message_sent",
+            "reply_to_msg_id": null,
+            "msg": null,
+            "raw_msg": {
+              "self_id": 222222,
+              "user_id": 222222,
+              "time": 1755849740,
+              "message_id": 1539411858,
+              "message_seq": 1539411858,
+              "real_id": 1539411858,
+              "real_seq": "3791",
+              "message_type": "group",
+              "sender": {
+                "user_id": 222222,
+                "nickname": "REDACTED_NICKNAME_3",
+                "card": "",
+                "role": "admin"
+              },
+              "font": 14,
+              "sub_type": "normal",
+              "message": [
+                {
+                  "type": "json",
+                  "data": {
+                    "data": "{\"app\":\"com.tencent.tuwen.lua\",\"bizsrc\":\"qqconnect.sdkshare\",\"config\":{\"ctime\":1755849739,\"forward\":1,\"token\":\"f4a8b1110b9c924f4dcaf4f7e11f1a47\",\"type\":\"normal\"},\"extra\":{\"app_type\":1,\"appid\":100507190,\"uin\":222222},\"meta\":{\"news\":{\"app_type\":1,\"appid\":100507190,\"ctime\":1755849739,\"desc\":\"机械翻转磁力屏，其工作原理是利用磁场对磁性物体的作用来实现像素的翻转显示。 磁力…\",\"jumpUrl\":\"https://www.xiaohongshu.com/discovery/item/689dbf65000000001c0078df?app_platform=ios&app_version=8.97&share_from_user_hidden=true&xsec_source=app_share&type=video&xsec_token=CBL_O0H6hlNz7byF0IW5IcHTnQ2fAMekJOp-6pJo6ksR0=&author_share=1&xhsshare=QQ&shareRedId=ODY7QUg6NEA2NzUyOTgwNjY0OThHSjw7&apptime=1755849737&share_id=f3eadbecd4e443cd8875f3318f2b2025\",\"preview\":\"https://pic.ugcimg.cn/f1566184702b020c1744ac15747af06c/jpg1\",\"tag\":\"小红书\",\"tagIcon\":\"https://open.gtimg.cn/open/app_icon/00/50/71/90/100507190_100_m.png?t=1755575996\",\"title\":\"什么是磁力屏\",\"uin\":222222}},\"prompt\":\"[分享]什么是磁力屏\",\"ver\":\"0.0.0.1\",\"view\":\"news\"}"
+                  }
+                }
+              ],
+              "message_format": "array",
+              "post_type": "message_sent",
+              "message_sent_type": "self",
+              "group_id": 8888888888,
+              "target_id": 8888888888
+            }
+          }
+        }
+      },
+      {
+        "json": {
+          "self_id": 222222,
+          "user_id": 111111,
+          "time": "2025-08-22 08:03:43",
+          "message_id": 1847269358,
+          "message_seq": 1847269358,
+          "real_id": 1847269358,
+          "real_seq": "3792",
+          "message_type": "group",
+          "sender": {
+            "user_id": 111111,
+            "nickname": "REDACTED_NICKNAME_1",
+            "card": "REDACTED_NICKNAME_4",
+            "role": "owner"
+          },
+          "font": 14,
+          "sub_type": "normal",
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "这个有意思 "
+              }
+            },
+            {
+              "type": "at",
+              "data": {
+                "qq": "222222"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": " "
+              }
+            }
+          ],
+          "message_format": "array",
+          "post_type": "message",
+          "group_id": 8888888888,
+          "db_format": {
+            "send_at": "2025-08-22 08:03:43",
+            "msg_id": 1847269358,
+            "group_id": 8888888888,
+            "user_id": 111111,
+            "msg_type": "message",
+            "reply_to_msg_id": "1539411858",
+            "msg": null,
+            "raw_msg": {
+              "self_id": 222222,
+              "user_id": 111111,
+              "time": 1755849823,
+              "message_id": 1847269358,
+              "message_seq": 1847269358,
+              "real_id": 1847269358,
+              "real_seq": "3792",
+              "message_type": "group",
+              "sender": {
+                "user_id": 111111,
+                "nickname": "REDACTED_NICKNAME_1",
+                "card": "REDACTED_NICKNAME_4",
+                "role": "owner"
+              },
+              "font": 14,
+              "sub_type": "normal",
+              "message": [
+                {
+                  "type": "reply",
+                  "data": {
+                    "id": "1539411858"
+                  }
+                },
+                {
+                  "type": "text",
+                  "data": {
+                    "text": "这个有意思 "
+                  }
+                },
+                {
+                  "type": "at",
+                  "data": {
+                    "qq": "222222"
+                  }
+                },
+                {
+                  "type": "text",
+                  "data": {
+                    "text": " "
+                  }
+                }
+              ],
+              "message_format": "array",
+              "post_type": "message",
+              "group_id": 8888888888
+            }
+          }
+        }
+      },
+      {
+        "json": {
+          "self_id": 222222,
+          "user_id": 222222,
+          "time": "2025-08-22 08:04:39",
+          "message_id": 1332830627,
+          "message_seq": 1332830627,
+          "real_id": 1332830627,
+          "real_seq": "3793",
+          "message_type": "group",
+          "sender": {
+            "user_id": 222222,
+            "nickname": "REDACTED_NICKNAME_3",
+            "card": "",
+            "role": "admin"
+          },
+          "font": 14,
+          "sub_type": "normal",
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "[系统表情: /菜汪]"
+              }
+            }
+          ],
+          "message_format": "array",
+          "post_type": "message_sent",
+          "message_sent_type": "self",
+          "group_id": 8888888888,
+          "target_id": 8888888888,
+          "db_format": {
+            "send_at": "2025-08-22 08:04:39",
+            "msg_id": 1332830627,
+            "group_id": 8888888888,
+            "user_id": 222222,
+            "msg_type": "message_sent",
+            "reply_to_msg_id": null,
+            "msg": null,
+            "raw_msg": {
+              "self_id": 222222,
+              "user_id": 222222,
+              "time": 1755849879,
+              "message_id": 1332830627,
+              "message_seq": 1332830627,
+              "real_id": 1332830627,
+              "real_seq": "3793",
+              "message_type": "group",
+              "sender": {
+                "user_id": 222222,
+                "nickname": "REDACTED_NICKNAME_3",
+                "card": "",
+                "role": "admin"
+              },
+              "font": 14,
+              "sub_type": "normal",
+              "message": [
+                {
+                  "type": "face",
+                  "data": {
+                    "id": "317",
+                    "raw": {
+                      "faceIndex": 317,
+                      "faceText": "/菜汪",
+                      "faceType": 3,
+                      "packId": "1",
+                      "stickerId": "7",
+                      "sourceType": 1,
+                      "stickerType": 1,
+                      "resultId": "",
+                      "surpriseId": "",
+                      "randomType": 0,
+                      "imageType": null,
+                      "pokeType": null,
+                      "spokeSummary": null,
+                      "doubleHit": null,
+                      "vaspokeId": null,
+                      "vaspokeName": null,
+                      "vaspokeMinver": null,
+                      "pokeStrength": null,
+                      "msgType": null,
+                      "faceBubbleCount": null,
+                      "oldVersionStr": null,
+                      "pokeFlag": null,
+                      "chainCount": 0
+                    },
+                    "resultId": "",
+                    "chainCount": 0
+                  }
+                }
+              ],
+              "message_format": "array",
+              "post_type": "message_sent",
+              "message_sent_type": "self",
+              "group_id": 8888888888,
+              "target_id": 8888888888
+            }
+          }
+        }
+      },
+      {
+        "json": {
+          "self_id": 222222,
+          "user_id": 222222,
+          "time": "2025-08-22 08:09:04",
+          "message_id": 2095725925,
+          "message_seq": 2095725925,
+          "real_id": 2095725925,
+          "real_seq": "3796",
+          "message_type": "group",
+          "sender": {
+            "user_id": 222222,
+            "nickname": "REDACTED_NICKNAME_3",
+            "card": "",
+            "role": "admin"
+          },
+          "font": 14,
+          "sub_type": "normal",
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "@REDACTED_NICKNAME_4 没干啥啊"
+              }
+            }
+          ],
+          "message_format": "array",
+          "post_type": "message_sent",
+          "message_sent_type": "self",
+          "group_id": 8888888888,
+          "target_id": 8888888888,
+          "db_format": {
+            "send_at": "2025-08-22 08:09:04",
+            "msg_id": 2095725925,
+            "group_id": 8888888888,
+            "user_id": 222222,
+            "msg_type": "message_sent",
+            "reply_to_msg_id": "1750148131",
+            "msg": null,
+            "raw_msg": {
+              "self_id": 222222,
+              "user_id": 222222,
+              "time": 1755850144,
+              "message_id": 2095725925,
+              "message_seq": 2095725925,
+              "real_id": 2095725925,
+              "real_seq": "3796",
+              "message_type": "group",
+              "sender": {
+                "user_id": 222222,
+                "nickname": "REDACTED_NICKNAME_3",
+                "card": "",
+                "role": "admin"
+              },
+              "font": 14,
+              "sub_type": "normal",
+              "message": [
+                {
+                  "type": "reply",
+                  "data": {
+                    "id": "1750148131"
+                  }
+                },
+                {
+                  "type": "text",
+                  "data": {
+                    "text": "@REDACTED_NICKNAME_4 没干啥啊"
+                  }
+                }
+              ],
+              "message_format": "array",
+              "post_type": "message_sent",
+              "message_sent_type": "self",
+              "group_id": 8888888888,
+              "target_id": 8888888888
+            }
+          }
+        }
+      },
+      {
+        "json": {
+          "self_id": 222222,
+          "user_id": 222222,
+          "time": "2025-08-22 08:09:04",
+          "message_id": 2095725925,
+          "message_seq": 2095725925,
+          "real_id": 2095725925,
+          "real_seq": "3796",
+          "message_type": "group",
+          "sender": {
+            "user_id": 222222,
+            "nickname": "REDACTED_NICKNAME_3",
+            "card": "",
+            "role": "admin"
+          },
+          "font": 14,
+          "sub_type": "normal",
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "@REDACTED_NICKNAME_4 没干啥啊"
+              }
+            }
+          ],
+          "message_format": "array",
+          "post_type": "message_sent",
+          "message_sent_type": "self",
+          "group_id": 8888888888,
+          "target_id": 8888888888,
+          "db_format": {
+            "send_at": "2025-08-22 08:09:04",
+            "msg_id": 2095725925,
+            "group_id": 8888888888,
+            "user_id": 222222,
+            "msg_type": "message_sent",
+            "reply_to_msg_id": "1750148131",
+            "msg": null,
+            "raw_msg": {
+              "self_id": 222222,
+              "user_id": 222222,
+              "time": 1755850144,
+              "message_id": 2095725925,
+              "message_seq": 2095725925,
+              "real_id": 2095725925,
+              "real_seq": "3796",
+              "message_type": "group",
+              "sender": {
+                "user_id": 222222,
+                "nickname": "REDACTED_NICKNAME_3",
+                "card": "",
+                "role": "admin"
+              },
+              "font": 14,
+              "sub_type": "normal",
+              "message": [
+                {
+                  "type": "reply",
+                  "data": {
+                    "id": "1750148131"
+                  }
+                },
+                {
+                  "type": "text",
+                  "data": {
+                    "text": "@REDACTED_NICKNAME_4 没干啥啊"
+                  }
+                }
+              ],
+              "message_format": "array",
+              "post_type": "message_sent",
+              "message_sent_type": "self",
+              "group_id": 8888888888,
+              "target_id": 8888888888
+            }
+          }
+        }
+      }
+    ]
+  },
+  "versionId": "4cf43cc6-440d-4128-8e2a-d762f174cb19",
+  "tags": [
+    {
+      "updatedAt": "2025-09-02T03:07:39.232Z",
+      "createdAt": "2025-09-02T03:07:39.232Z",
+      "id": "QPm6Jx9oO3RUCGLx",
+      "name": "ChatBot"
+    }
+  ]
+}
