@@ -6,6 +6,7 @@
 # Data: Raw Exports and References
 n8n/raw_data/
 docs/references/
+docs/demo/demo_video_project/
 
 # OS: System Files
 .DS_Store

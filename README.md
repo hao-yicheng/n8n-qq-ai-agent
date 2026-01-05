@@ -14,6 +14,20 @@ An intelligent automation framework for QQ interaction, integrating **n8n** for 
 
 ---
 
+## 🚀 Live Demo
+
+This video demonstrates the real-time AI agent's workflow in a QQ group chat. Click the thumbnail below to watch the 2K demo on YouTube.
+
+<div align="center">
+<a href="https://youtu.be/kegaZN7BDCg" target="_blank" title="Watch on YouTube">
+<img src="https://img.youtube.com/vi/kegaZN7BDCg/maxresdefault.jpg" alt="Watch the demo video on YouTube" style="max-width: 100%;">
+</a>
+</div>
+
+Alternatively, you can [download the original video file](./docs/demo/n8n-qq-ai-agent-showcase.mp4).
+
+---
+
 ## 🏗️ System Architecture
 
 > **User Guide**: GitHub's native viewer supports high-resolution **zooming** and **dragging**. Click the diagrams below to enter the full-screen interactive mode.
@@ -58,7 +72,7 @@ The **Main Handler** is the primary entry point for all incoming QQ messages. Al
 </a>
 
 <details>
-<summary><b>📂 Click to expand Full Module Gallery (Sub-flows & AI Tools)</b></summary>
+<summary><b>👉 Click to expand Full Module Gallery (Sub-flows & AI Tools)</b></summary>
 
 > ### 🧩 Category: Message Processing (Sub-workflows)
 > 
@@ -154,97 +168,102 @@ The **Main Handler** is the primary entry point for all incoming QQ messages. Al
 
 This guide details the steps to deploy the n8n and napcat services and configure them to work together.
 
-### 1. Initial Environment Setup
+<details>
+<summary><b>👉 Click to expand Deployment & Setup Details</b></summary>
 
-Before launching the containers, you need to configure the environment and set up the shared Docker network.
+> ### 1. Initial Environment Setup
+> 
+> Before launching the containers, you need to configure the environment and set up the shared Docker network.
+> 
+> 1.  **Configure Environment Files:**
+>     *   Edit [`deploy/n8n-compose/.env`](./deploy/n8n-compose/.env) and [`deploy/napcat-compose/.env`](./deploy/napcat-compose/.env) to match your local setup (e.g., set your domain for `N8N_HOST`, user/group IDs for `NAPCAT_UID`/`NAPCAT_GID`, etc.).
+> 
+> 2.  **Create Docker Network:**
+>     The services communicate over a shared Docker network. Create it with the following command, using the network name defined in your `.env` files:
+>     ```bash
+>     docker network create napcat-n8n-network
+>     ```
+> 
+> ### 2. Deploying Containers
+> 
+> With the environment configured, launch the services using Docker Compose. It's recommended to start the `n8n` stack first.
+> 
+> 1.  **Start n8n Service:**
+>     ```bash
+>     cd deploy/n8n-compose
+>     docker compose up -d --build
+>     ```
+> 
+> 2.  **Start napcat Service:**
+>     ```bash
+>     cd deploy/napcat-compose
+>     docker compose up -d --build
+>     ```
+> 
+> ### 3. Accessing Services & Logging In
+> 
+> 1.  **n8n Web UI:**
+>     *   Access n8n through the domain you configured in [`deploy/n8n-compose/.env`](./deploy/n8n-compose/.env) for the `N8N_HOST` variable (e.g., `http://your.domain.com`).
+> 
+> 2.  **napcat Web UI:**
+>     *   Access the napcat web interface via your server's IP and the `NAPCAT_WEB_PORT` from its [`.env`](./deploy/napcat-compose/.env) file. For example: `http://192.168.1.100:6099/webui/`.
+> 
+> 3.  **napcat QQ Login:**
+>     You need to log in to QQ by scanning a QR code. You can get this code in two ways:
+>     *   **Method 1 (Command Line):** View the container logs to get a QR code image link. The container name is defined in [`deploy/napcat-compose/.env`](./deploy/napcat-compose/.env).
+>         ```bash
+>         docker logs napcat
+>         ```
+>     *   **Method 2 (Web UI):** In the napcat web interface, navigate to "猫猫日志" -> "历史日志" to find the QR code.
+>     *   Use your mobile QQ app to scan the QR code and complete the login.
+> 
+> ### 4. Application & Workflow Configuration
+> 
+> This step prepares the configuration before importing workflows into n8n.
+> 
+> 1.  **Modify Workflow Placeholders:**
+>     *   Edit the `SENSITIVE_MAP` dictionary in [`scripts/workflow_configurator.py`](./scripts/workflow_configurator.py), specifically the `# Infrastructure & Tokens` section, to match your environment's real values (e.g., your actual Bark token, API keys, etc.).
+> 
+> 2.  **Run the Configurator Script:**
+>     This script will replace the placeholders in the local workflow files with the real values you just set in `SENSITIVE_MAP`.
+>     ```bash
+>     python scripts/workflow_configurator.py
+>     ```
+> 
+> ### 5. Final n8n Setup
+> 
+> After preparing the workflows, import them and set up the necessary credentials inside n8n.
+> 
+> 1.  **Import Workflows to n8n:**
+>     *   Navigate to your n8n web UI.
+>     *   Manually import the now-configured JSON files from the [`n8n/workflows/`](./n8n/workflows/) directory.
+> 
+> 2.  **Configure Credentials in n8n UI:**
+>     After importing, your workflows will not run correctly until you configure the credentials for the services they use. In the n8n UI, find the corresponding nodes and create/select the credentials for:
+>     *   **NapCat Token:** The private token you will create in the napcat HTTP Server (see next step).
+>     *   **LLM APIs:** API keys for services like DeepSeek, Qwen, etc.
+>     *   **Search APIs:** Credentials for services like Aliyun Search.
+> 
+> ### 6. Final napcat Setup
+> 
+> Finally, configure napcat to communicate with n8n.
+> 
+> 1.  **napcat Connection Configuration:**
+>     Log in to the napcat web UI and navigate to the "网络配置" section.
+>     *   **Create an "HTTP 服务器" (HTTP Server):**
+>         *   **Host:** `0.0.0.0`
+>         *   **Port:** `3000` (This corresponds to the host and port in `REDACTED_NAPCAT_HOST` within [`scripts/workflow_configurator.py`](./scripts/workflow_configurator.py)).
+>         *   **消息格式 (Message Format):** `Array`
+>         *   **Token:** Create a secure, private token. This same token must be used in the n8n credential for NapCat (see step 5.2).
+>     *   **Create an "HTTP 客户端" (HTTP Client):**
+>         *   **URL:** `http://n8n:5678/webhook/napcat-webhook` (This URL corresponds to `REDACTED_NAPCAT_WEBHOOK_NAME` in [`scripts/workflow_configurator.py`](./scripts/workflow_configurator.py)).
+>         *   **上报自身消息 (Report Self Messages):** `True`
+>         *   **Token:** Leave this blank. For added security, you can set a token here and add an `IF` node after the `NapCatTriger` webhook node in your n8n workflow to manually check for a matching `Bearer` header.
 
-1.  **Configure Environment Files:**
-    *   Edit [`deploy/n8n-compose/.env`](./deploy/n8n-compose/.env) and [`deploy/napcat-compose/.env`](./deploy/napcat-compose/.env) to match your local setup (e.g., set your domain for `N8N_HOST`, user/group IDs for `NAPCAT_UID`/`NAPCAT_GID`, etc.).
-
-2.  **Create Docker Network:**
-    The services communicate over a shared Docker network. Create it with the following command, using the network name defined in your `.env` files:
-    ```bash
-    docker network create napcat-n8n-network
-    ```
-
-### 2. Deploying Containers
-
-With the environment configured, launch the services using Docker Compose. It's recommended to start the `n8n` stack first.
-
-1.  **Start n8n Service:**
-    ```bash
-    cd deploy/n8n-compose
-    docker compose up -d --build
-    ```
-
-2.  **Start napcat Service:**
-    ```bash
-    cd deploy/napcat-compose
-    docker compose up -d --build
-    ```
-
-### 3. Accessing Services & Logging In
-
-1.  **n8n Web UI:**
-    *   Access n8n through the domain you configured in [`deploy/n8n-compose/.env`](./deploy/n8n-compose/.env) for the `N8N_HOST` variable (e.g., `http://your.domain.com`).
-
-2.  **napcat Web UI:**
-    *   Access the napcat web interface via your server's IP and the `NAPCAT_WEB_PORT` from its [`.env`](./deploy/napcat-compose/.env) file. For example: `http://192.168.1.100:6099/webui/`.
-
-3.  **napcat QQ Login:**
-    You need to log in to QQ by scanning a QR code. You can get this code in two ways:
-    *   **Method 1 (Command Line):** View the container logs to get a QR code image link. The container name is defined in [`deploy/napcat-compose/.env`](./deploy/napcat-compose/.env).
-        ```bash
-        docker logs napcat
-        ```
-    *   **Method 2 (Web UI):** In the napcat web interface, navigate to "猫猫日志" -> "历史日志" to find the QR code.
-    *   Use your mobile QQ app to scan the QR code and complete the login.
-
-### 4. Application & Workflow Configuration
-
-This step prepares the configuration before importing workflows into n8n.
-
-1.  **Modify Workflow Placeholders:**
-    *   Edit the `SENSITIVE_MAP` dictionary in [`scripts/workflow_configurator.py`](./scripts/workflow_configurator.py), specifically the `# Infrastructure & Tokens` section, to match your environment's real values (e.g., your actual Bark token, API keys, etc.).
-
-2.  **Run the Configurator Script:**
-    This script will replace the placeholders in the local workflow files with the real values you just set in `SENSITIVE_MAP`.
-    ```bash
-    python scripts/workflow_configurator.py
-    ```
-
-### 5. Final n8n Setup
-
-After preparing the workflows, import them and set up the necessary credentials inside n8n.
-
-1.  **Import Workflows to n8n:**
-    *   Navigate to your n8n web UI.
-    *   Manually import the now-configured JSON files from the [`n8n/workflows/`](./n8n/workflows/) directory.
-
-2.  **Configure Credentials in n8n UI:**
-    After importing, your workflows will not run correctly until you configure the credentials for the services they use. In the n8n UI, find the corresponding nodes and create/select the credentials for:
-    *   **NapCat Token:** The private token you will create in the napcat HTTP Server (see next step).
-    *   **LLM APIs:** API keys for services like DeepSeek, Qwen, etc.
-    *   **Search APIs:** Credentials for services like Aliyun Search.
-
-### 6. Final napcat Setup
-
-Finally, configure napcat to communicate with n8n.
-
-1.  **napcat Connection Configuration:**
-    Log in to the napcat web UI and navigate to the "网络配置" section.
-    *   **Create an "HTTP 服务器" (HTTP Server):**
-        *   **Host:** `0.0.0.0`
-        *   **Port:** `3000` (This corresponds to the host and port in `REDACTED_NAPCAT_HOST` within [`scripts/workflow_configurator.py`](./scripts/workflow_configurator.py)).
-        *   **消息格式 (Message Format):** `Array`
-        *   **Token:** Create a secure, private token. This same token must be used in the n8n credential for NapCat (see step 5.2).
-    *   **Create an "HTTP 客户端" (HTTP Client):**
-        *   **URL:** `http://n8n:5678/webhook/napcat-webhook` (This URL corresponds to `REDACTED_NAPCAT_WEBHOOK_NAME` in [`scripts/workflow_configurator.py`](./scripts/workflow_configurator.py)).
-        *   **上报自身消息 (Report Self Messages):** `True`
-        *   **Token:** Leave this blank. For added security, you can set a token here and add an `IF` node after the `NapCatTriger` webhook node in your n8n workflow to manually check for a matching `Bearer` header.
-
+</details>
 
 ---
+
 
 ## 🛠️ Maintenance & Scripts
 
@@ -257,20 +276,13 @@ Finally, configure napcat to communicate with n8n.
 
 ```text
 ai-qq-bot-n8n/
-├── deploy/               # Docker Compose deployment stacks
+├── deploy/
 │   ├── n8n-compose/      # n8n, Traefik, and Postgres stack
-│   │   ├── compose.yaml
-│   │   ├── .env.template
-│   │   └── .env
-│   └── napcat-compose/   # napcat stack
-│       ├── docker-compose.yml
-│       ├── .env.template
-│       └── .env
+│   └── napcat-compose/   # NapCat QQ Bot stack
+├── docs/                 # Documentation and architecture diagrams
 ├── n8n/
-│   └── workflows/        # Redacted n8n workflow JSON files
-├── scripts/              # Project maintenance tools
-│   ├── backup_to_samba_template.sh
-│   └── workflow_configurator.py
+│   └── workflows/        # n8n workflow JSON files
+├── scripts/              # Helper & maintenance scripts
 └── README.md
 ```
 
